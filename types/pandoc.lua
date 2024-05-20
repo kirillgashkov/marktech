@@ -200,8 +200,50 @@ function Inline:clone() end
 ---@field widths List<number>
 ---@field headers List<Inlines>
 ---@field rows List<List<Blocks>>
+---@class Template
 ---@class ReaderOptions
+---@field abbreviations any # set of known abbreviations, originally set of strings
+---@field columns integer # number of columns in terminal
+---@field default_image_extension string # default extension for images
+---@field extensions string[] # string representation of the syntax extensions bit field, originally sequence of strings
+---@field indented_code_classes string[] # default classes for indented code blocks, originally list of strings
+---@field standalone boolean # whether the input was a standalone document with header
+---@field strip_comments boolean # HTML comments are stripped instead of parsed as raw HTML
+---@field tab_stop integer # width (i.e. equivalent number of spaces) of tab stops
+---@field track_changes string # track changes setting for docx; one of accept-changes, reject-changes, and all-changes
 ---@class WriterOptions
+---@field chunk_template string # Template used to generate chunked HTML filenames
+---@field cite_method string # How to print cites – one of ‘citeproc’, ‘natbib’, or ‘biblatex’
+---@field columns integer # Characters in a line (for text wrapping)
+---@field dpi integer # DPI for pixel to/from inch/cm conversions
+---@field email_obfuscation string # How to obfuscate emails – one of ‘none’, ‘references’, or ‘javascript’
+---@field epub_chapter_level integer # Header level for chapters, i.e., how the document is split into separate files
+---@field epub_fonts string[] # Paths to fonts to embed, originally sequence of strings
+---@field epub_metadata string|nil # Metadata to include in EPUB
+---@field epub_subdirectory string # Subdir for epub in OCF
+---@field extensions string[] # Markdown extensions that can be used, originally sequence of strings
+---@field highlight_style table|nil # Style to use for highlighting; see the output of pandoc --print-highlight-style=... for an example structure. The value nil means that no highlighting is used.
+---@field html_math_method string|table # How to print math in HTML; one ‘plain’, ‘gladtex’, ‘webtex’, ‘mathml’, ‘mathjax’, or a table with keys method and url.
+---@field html_q_tags boolean # Use <q> tags for quotes in HTML
+---@field identifier_prefix string # Prefix for section & note ids in HTML and for footnote marks in markdown
+---@field incremental boolean # True if lists should be incremental
+---@field listings boolean # Use listings package for code
+---@field number_offset integer[] # Starting number for section, subsection, …, originally sequence of integers
+---@field number_sections boolean # Number sections in LaTeX
+---@field prefer_ascii boolean # Prefer ASCII representations of characters when possible
+---@field reference_doc string|nil # Path to reference document if specified
+---@field reference_links boolean # Use reference links in writing markdown, rst
+---@field reference_location string # Location of footnotes and references for writing markdown; one of ‘end-of-block’, ‘end-of-section’, ‘end-of-document’. The common prefix may be omitted when setting this value.
+---@field section_divs boolean # Put sections in div tags in HTML
+---@field setext_headers boolean # Use setext headers for levels 1-2 in markdown
+---@field slide_level integer|nil # Force header level of slides
+---@field tab_stop integer # Tabstop for conversion btw spaces and tabs
+---@field table_of_contents boolean # Include table of contents
+---@field template Template|nil # Template to use
+---@field toc_depth integer # Number of levels to include in TOC
+---@field top_level_division string # Type of top-level divisions; one of ‘top-level-part’, ‘top-level-chapter’, ‘top-level-section’, or ‘top-level-default’. The prefix top-level may be omitted when setting this value.
+---@field variables table # Variables to set in template; string-indexed table
+---@field wrap_text string # Option for wrapping text; one of ‘wrap-auto’, ‘wrap-none’, or ‘wrap-preserve’. The wrap- prefix may be omitted when setting this value.
 
 ---List of key/value pairs. Values can be accessed by using keys as indices to the list table.
 ---Attributes values are equal in Lua if and only if they are equal in Haskell.
