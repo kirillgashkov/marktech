@@ -1,10 +1,25 @@
 ---@meta
 
+-- Made by hand on 2024-05-20 from https://pandoc.org/lua-filters.html.
+
 ---pandoc is a module that can be used in Lua filters, readers and writers. See
 ---https://pandoc.org/lua-filters.html.
+---@type table
 pandoc = {}
-
--- Made by hand on 2024-05-20 from https://pandoc.org/lua-filters.html.
+---@type table
+lpeg = {}
+---@type table
+re = {}
+---@type string
+FORMAT = ""
+---@type {[1]: integer, [2]: integer, [3]: integer}
+PANDOC_VERSION = {}
+---@type {[1]: integer, [2]: integer, [3]: integer}
+PANDOC_API_VERSION = {}
+---@type string
+PANDOC_SCRIPT_FILE = ""
+---@type table
+PANDOC_STATE = {}
 
 ---@class List<T>: { [integer]: T }
 local List = {}
