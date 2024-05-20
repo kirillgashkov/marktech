@@ -7,13 +7,23 @@ pandoc = {}
 -- Made by hand on 2024-05-20 from https://pandoc.org/lua-filters.html.
 
 ---@class List<T>: { [integer]: T }
+local List = {}
+---@return List
+function List:clone() end
 
 ---@class Pandoc
 ---@field blocks Blocks
 ---@field meta Meta
+local Pandoc = {}
+---@param lua_filter table
+---@return Pandoc
+function Pandoc:walk(lua_filter) end
 ---@class Meta
 
 ---@class Block
+local Block = {}
+---@return Block
+function Block:clone() end
 ---@class BlockQuote: Block
 ---@field content Blocks
 ---@field tag "BlockQuote"
@@ -72,6 +82,9 @@ pandoc = {}
 ---@alias BlocksLike List<Block>|Inlines|string
 
 ---@class Inline
+local Inline = {}
+---@return Inline
+function Inline:clone() end
 ---@class Cite: Inline
 ---@field content Inlines
 ---@field citations List<Citation>
