@@ -5,7 +5,7 @@ local M = {}
 ---@param iterable any[]
 ---@param initial T
 ---@return T
-function M.reduce(f, iterable, initial)
+function M.Reduce(f, iterable, initial)
 	local reduced = initial
 	for _, v in ipairs(iterable) do
 		reduced = f(reduced, v)
@@ -16,8 +16,8 @@ end
 ---@generic T
 ---@param iterable any[][]
 ---@return any[]
-function M.flatten(iterable)
-	return M.reduce(function(flattened, a)
+function M.Flatten(iterable)
+	return M.Reduce(function(flattened, a)
 		for _, v in ipairs(a) do
 			table.insert(flattened, v)
 		end
