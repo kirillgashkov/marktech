@@ -1,20 +1,29 @@
-local writer = {}
+local file = require("file")
+local log = require("log")
 
----@param code_block CodeBlock
-writer.CodeBlock = function(code_block)
-	print("code block!")
+assert(tostring(PANDOC_API_VERSION) == "1.23.1", "Unsupported Pandoc API")
+
+local filter = {}
+
+---@param t Table
+filter.Table = function(t)
+	return t
 end
 
 ---@param doc Pandoc
 ---@param opts WriterOptions
 ---@return string
 function Writer(doc, opts)
-	return pandoc.write(doc:walk(writer), "commonmark", opts)
+	return pandoc.write(doc:walk(filter), "latex", opts)
 end
 
 ---@return string
 function Template()
-	return pandoc.template.default("commonmark")
+	local scriptDir = pandoc.path.directory(PANDOC_SCRIPT_FILE)
+	local templateFile = pandoc.path.join({ scriptDir, "template.tex" })
+	local template = file.Read(templateFile)
+	assert(template ~= nil)
+	return template
 end
 
 ---@type { [string]: boolean }
