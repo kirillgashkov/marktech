@@ -3,7 +3,7 @@ M = {}
 ---@type "text"|"json"
 M.Format = "text"
 
----@param type "error" | "warning" | "note"
+---@param type "panic" | "error" | "warning" | "note"
 ---@param message string
 ---@param source? string
 ---@param code? string|nil
@@ -36,7 +36,7 @@ local function makeTextLog(type, message, source, code)
 	return s
 end
 
----@param type "error" | "warning" | "note"
+---@param type "panic" | "error" | "warning" | "note"
 ---@param message string
 ---@param source? string|nil
 ---@param code? string|nil
@@ -45,7 +45,7 @@ local function makeJsonLog(type, message, source, code)
 	return pandoc.json.encode(d)
 end
 
----@param type "error" | "warning" | "note"
+---@param type "panic" | "error" | "warning" | "note"
 ---@param message string
 ---@param source? string
 ---@param code? string|nil
@@ -61,6 +61,13 @@ function M.log(type, message, source, code)
 	end
 
 	io.stderr:write(s .. "\n")
+end
+
+---@param message string
+---@param source? string|nil
+---@param code? string|nil
+function M.Panic(message, source, code)
+	M.log("panic", message, source, code)
 end
 
 ---@param message string
