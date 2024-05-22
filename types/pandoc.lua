@@ -107,6 +107,11 @@ function List.remove(self, index) end
 ---@param comparator function # Receives two arguments and returns a boolean.
 function List.sort(self, comparator) end
 
+---@generic T
+---@param table_? T[]
+---@return List<T>
+function pandoc.List(table_) end
+
 ---@class Pandoc
 ---@field blocks Blocks
 ---@field meta Meta
@@ -348,7 +353,7 @@ function Inline:clone() end
 ---Column alignment and width specification for a single table column. This is a pair, i.e., a
 ---plain table, with the following components: 1) cell alignment, 2) table column width, as a
 ---fraction of the page width.
----@alias ColSpec { [1]: Alignment, [2]: number }
+---@alias ColSpec { [1]: Alignment, [2]: number|"ColWidthDefault" }
 
 ---Alignment is a string value indicating the horizontal alignment of a table column. The default
 ---alignment is AlignDefault (often equivalent to centered).
