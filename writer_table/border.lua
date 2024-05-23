@@ -1,4 +1,7 @@
 local log = require("log")
+local utility = require("writer_table.utility")
+
+local border = {}
 
 ---@param innerWidth number
 ---@param outerWidth number
@@ -6,7 +9,7 @@ local log = require("log")
 ---@param lastBottom "inner" | "outer" | "none"
 ---@param rowCount integer
 ---@return List<{ T: number, B: number }>
-local function makeRowBorders(innerWidth, outerWidth, firstTop, lastBottom, rowCount)
+function border.MakeRowBorders(innerWidth, outerWidth, firstTop, lastBottom, rowCount)
 	local borders = pandoc.List({})
 	for i = 1, rowCount do
 		if i == 1 then
@@ -40,7 +43,7 @@ end
 ---@param outerWidth number
 ---@param colCount integer
 ---@return List<{ L: number, R: number }>
-local function makeColBorders(innerWidth, outerWidth, colCount)
+function border.MakeColBorders(innerWidth, outerWidth, colCount)
 	local borders = pandoc.List({})
 	for i = 1, colCount do
 		if i == 1 then
@@ -54,27 +57,26 @@ local function makeColBorders(innerWidth, outerWidth, colCount)
 	return borders
 end
 
+---@param b "T" | "B"
 ---@param y integer
 ---@param t List<List<contentCell | mergeCell>>
----@param colCount integer
----@return { T: List<{ Width: number, Length: integer }>, B: List<{ Width: number, Length: integer }> }
-local function getRowBorderSegments(y, t, colCount)
-	---@type { T: List<{ Width: number, Length: integer }>, B: List<{ Width: number, Length: integer }> }
-	local rBorderSegments = { T = pandoc.List({}), B = pandoc.List({}) }
+---@return List<{ Width: number, Length: integer }>
+local function getSegmentsForRowBorder(b, y, t)
+	local segments = pandoc.List({})
 
-	local rBorderSegment = { T = { Width = 0, Length = 0 }, B = { Width = 0, Length = 0 } }
+	local segment = { Width = 0, Length = 0 }
 
-	for x = 1, colCount do
+	for x = 1, #t[y] do
 		local cBorder = { T = 0, B = 0 }
 
 		local c = t[y][x]
 		if c.Type == "contentCell" then
 			---@cast c contentCell
 
-			cBorder.T = c.Border.T
-			if c.RowSpan == 1 then
-				cBorder.B = c.Border.B
-			end
+			cBorder = {
+				T = c.Border.T,
+				B = c.RowSpan == 1 and c.Border.B or 0,
+			}
 		elseif c.Type == "mergeCell" then
 			---@cast c mergeCell
 
@@ -82,81 +84,47 @@ local function getRowBorderSegments(y, t, colCount)
 			assert(ofC.Type == "contentCell")
 			---@cast ofC contentCell
 
-			if y == c.Of.Y then
-				cBorder.T = ofC.Border.T
-			elseif y == c.Of.Y + ofC.RowSpan - 1 then
-				cBorder.B = ofC.Border.B
-			end
+			cBorder = {
+				T = y == c.Of.Y and ofC.Border.T or 0,
+				B = y == c.Of.Y + ofC.RowSpan - 1 and ofC.Border.B or 0,
+			}
 		else
 			assert(false)
 		end
 
-		if cBorder.T == rBorderSegment.T.Width then
-			rBorderSegment.T.Length = rBorderSegment.T.Length + 1
+		if cBorder[b] == segment.Width then
+			segment.Length = segment.Length + 1
 		else
-			if rBorderSegment.T.Length > 0 then
-				rBorderSegments.T:insert(rBorderSegment.T)
+			if segment.Length > 0 then
+				segments:insert(segment)
 			end
-			rBorderSegment.T = { Width = cBorder.T, Length = 1 }
-		end
-
-		if cBorder.B == rBorderSegment.B.Width then
-			rBorderSegment.B.Length = rBorderSegment.B.Length + 1
-		else
-			if rBorderSegment.B.Length > 0 then
-				rBorderSegments.B:insert(rBorderSegment.B)
-			end
-			rBorderSegment.B = { Width = cBorder.B, Length = 1 }
+			segment = { Width = cBorder[b], Length = 1 }
 		end
 	end
 
-	if rBorderSegment.T.Length > 0 then
-		rBorderSegments.T:insert(rBorderSegment.T)
+	if segment.Length > 0 then
+		segments:insert(segment)
 	end
-	rBorderSegment.T = { Width = 0, Length = 0 }
+	segment = { Width = 0, Length = 0 }
 
-	if rBorderSegment.B.Length > 0 then
-		rBorderSegments.B:insert(rBorderSegment.B)
-	end
-	rBorderSegment.B = { Width = 0, Length = 0 }
-
-	return rBorderSegments
+	return segments
 end
 
----@param w number
----@return string
-local function makeBorderWidthLatexString(w)
-	return string.format("%.4f", w) .. "pt"
-end
-
----@param w number
----@param config config
----@return string
-local function makeVerticalBorderLatexString(w, config)
-	if w == 0 then
-		return ""
-	elseif w == config.arrayRuleWidth then
-		return "|"
-	else
-		return "!{\\vrule width " .. makeBorderWidthLatexString(w) .. "}"
-	end
-end
-
----@param widthSegments List<{ Width: number, Length: integer }>
+---@param segments List<{ Width: number, Length: integer }>
 ---@param source string|nil
 ---@param config config
 ---@return string
-local function makeHorizontalBorderSegmentsLatexString(widthSegments, source, config)
+local function makeHorizontalBorderSegmentsLatexString(segments, source, config)
 	local s = ""
 
 	local x = 1
-	for _, w in ipairs(widthSegments) do
+	for _, w in ipairs(segments) do
 		if w.Width == 0 then
 			x = x + w.Length
 		else
 			if w.Width ~= config.arrayRuleWidth then
-				log.Error("the table has a segmented horizontal border with unsupported width", source)
-				log.Note("use width " .. makeBorderWidthLatexString(config.arrayRuleWidth) .. " instead", source)
+				log.Error("the table has a segment of a horizontal border with unsupported width", source)
+				log.Note("use width " .. utility.MakeFixedWidthLatexString(config.arrayRuleWidth) .. " instead", source)
 			end
 			local x1, x2 = x, x + w.Length - 1
 			s = s .. "\\cline{" .. x1 .. "-" .. x2 .. "}"
@@ -167,26 +135,45 @@ local function makeHorizontalBorderSegmentsLatexString(widthSegments, source, co
 	return s
 end
 
----@param widthSegments List<{ Width: number, Length: integer }>
+---@param w number
+---@param config config
+---@return string
+function border.MakeVerticalBorderLatexString(w, config)
+	if w == 0 then
+		return ""
+	elseif w == config.arrayRuleWidth then
+		return "|"
+	else
+		return "!{\\vrule width " .. utility.MakeFixedWidthLatexString(w) .. "}"
+	end
+end
+
+---@param b "T" | "B"
+---@param y integer
+---@param t List<List<contentCell | mergeCell>>
 ---@param source string|nil
 ---@param config config
 ---@return string
-local function makeHorizontalBorderLatexString(widthSegments, source, config)
-	if #widthSegments == 0 then
+function border.MakeHorizontalBorderLatexStringForRowBorder(b, y, t, source, config)
+	local segments = getSegmentsForRowBorder(b, y, t)
+
+	if #segments == 0 then
 		return ""
 	end
 
-	if #widthSegments == 1 then
-		local w = widthSegments[1].Width
+	if #segments == 1 then
+		local w = segments[1].Width
 
 		if w == 0 then
 			return ""
 		elseif w == config.arrayRuleWidth then
 			return "\\hline"
 		else
-			return "\\specialrule{" .. makeBorderWidthLatexString(w) .. "}{0pt}{0pt}"
+			return "\\specialrule{" .. utility.MakeFixedWidthLatexString(w) .. "}{0pt}{0pt}"
 		end
 	end
 
-	return makeHorizontalBorderSegmentsLatexString(widthSegments, source, config)
+	return makeHorizontalBorderSegmentsLatexString(segments, source, config)
 end
+
+return border
