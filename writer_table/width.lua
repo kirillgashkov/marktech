@@ -1,61 +1,45 @@
+local log = require("log")
+local utility = require("writer_table.utility")
+
+local width = {}
+
 -- I'm not sure if Pandoc allows mixing default and non-default column widths but we do. One of our filters surely
 -- generates such tables. Also these widths account for borders, similar to CSS's "box-sizing: border-box".
 ---@param colSpecs List<ColSpec>
 ---@param source string|nil
----@return List<"max-width" | number>
-local function makeColWidths(colSpecs, source)
+---@return List<number | nil>
+function width.MakeColWidths(colSpecs, source)
+	---@type List<number | nil>
 	local widths = pandoc.List({})
 
 	for _, colSpec in ipairs(colSpecs) do
-		local colSpecWidth = colSpec[2]
-		if colSpecWidth == "ColWidthDefault" then
-			widths:insert("max-width")
+		local w = colSpec[2]
+
+		if w == "ColWidthDefault" then
+			widths:insert(nil)
+		elseif type(w) == "number" then
+			widths:insert(w)
 		else
-			assert(type(colSpecWidth) == "number")
-			widths:insert(colSpecWidth)
+			assert(false)
 		end
 	end
 
-	local totalPercentageWidth = 0
+	local total = 0
 	for i = 1, #widths do
-		totalPercentageWidth = totalPercentageWidth + widths[i]
+		total = total + (widths[i] or 0)
 	end
-	if totalPercentageWidth > 1 then
+	if total > 1 then
 		log.Warning("the table has a total column width greater than 100%", source)
 	end
 
 	return widths
 end
 
----@param width "max-width" | number
----@param border { L: number | nil, R: number | nil }
----@return string | nil
-local function makeWidthLatexString(width, border)
-	if width == "max-width" then
-		return nil
-	elseif type(width) == "number" then
-		return fun.Reduce(
-			function(a, b)
-				return a .. b
-			end,
-			fun.Flatten({
-				fun.Flatten({
-					{ "(" },
-					fun.Flatten({
-						{ "\\real{" },
-						{ string.format("%.4f", width) },
-						{ "}" },
-					}),
-					{ " * " },
-					{ "\\columnwidth" },
-					{ ")" },
-				}),
-				{ " - " },
-				{ makeBorderWidthLatexString((border.L or 0) + (border.R or 0)) },
-			}),
-			""
-		)
-	else
-		assert(false)
-	end
+---@param w number # Percentage.
+---@param colBorder { L: number, R: number }
+---@return string
+function width.MakeColWidthLatex(w, colBorder)
+	return utility.makePercentWidthLatex(w) .. " - " .. utility.MakeFixedWidthLatex(colBorder.L + colBorder.R)
 end
+
+return width

@@ -124,7 +124,7 @@ local function makeHorizontalBorderSegmentsLatexString(segments, source, config)
 		else
 			if w.Width ~= config.arrayRuleWidth then
 				log.Error("the table has a segment of a horizontal border with unsupported width", source)
-				log.Note("use width " .. utility.MakeFixedWidthLatexString(config.arrayRuleWidth) .. " instead", source)
+				log.Note("use width " .. utility.MakeFixedWidthLatex(config.arrayRuleWidth) .. " instead", source)
 			end
 			local x1, x2 = x, x + w.Length - 1
 			s = s .. "\\cline{" .. x1 .. "-" .. x2 .. "}"
@@ -144,7 +144,7 @@ function border.MakeVerticalBorderLatexString(w, config)
 	elseif w == config.arrayRuleWidth then
 		return "|"
 	else
-		return "!{\\vrule width " .. utility.MakeFixedWidthLatexString(w) .. "}"
+		return "!{\\vrule width " .. utility.MakeFixedWidthLatex(w) .. "}"
 	end
 end
 
@@ -169,7 +169,7 @@ function border.MakeHorizontalBorderLatexStringForRowBorder(b, y, t, source, con
 		elseif w == config.arrayRuleWidth then
 			return "\\hline"
 		else
-			return "\\specialrule{" .. utility.MakeFixedWidthLatexString(w) .. "}{0pt}{0pt}"
+			return "\\specialrule{" .. utility.MakeFixedWidthLatex(w) .. "}{0pt}{0pt}"
 		end
 	end
 
