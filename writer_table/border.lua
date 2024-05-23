@@ -1,34 +1,36 @@
+local log = require("log")
+
 ---@param innerWidth number
 ---@param outerWidth number
----@param firstTop "inner" | "outer" | nil
----@param lastBottom "inner" | "outer" | nil
+---@param firstTop "inner" | "outer" | "none"
+---@param lastBottom "inner" | "outer" | "none"
 ---@param rowCount integer
----@return List<{ T: number | nil, B: number | nil }>
+---@return List<{ T: number, B: number }>
 local function makeRowBorders(innerWidth, outerWidth, firstTop, lastBottom, rowCount)
 	local borders = pandoc.List({})
 	for i = 1, rowCount do
 		if i == 1 then
 			if firstTop == "inner" then
-				borders:insert({ T = innerWidth })
+				borders:insert({ T = innerWidth, B = 0 })
 			elseif firstTop == "outer" then
-				borders:insert({ T = outerWidth })
-			elseif firstTop == nil then
-				borders:insert({})
+				borders:insert({ T = outerWidth, B = 0 })
+			elseif firstTop == "none" then
+				borders:insert({ T = 0, B = 0 })
 			else
 				assert(false)
 			end
 		elseif i == rowCount then
 			if lastBottom == "inner" then
-				borders:insert({ B = innerWidth })
+				borders:insert({ T = 0, B = innerWidth })
 			elseif lastBottom == "outer" then
-				borders:insert({ B = outerWidth })
-			elseif lastBottom == nil then
-				borders:insert({})
+				borders:insert({ T = 0, B = outerWidth })
+			elseif lastBottom == "none" then
+				borders:insert({ T = 0, B = 0 })
 			else
 				assert(false)
 			end
 		else
-			borders:insert({ T = innerWidth })
+			borders:insert({ T = innerWidth, B = 0 })
 		end
 	end
 	return borders
@@ -37,16 +39,16 @@ end
 ---@param innerWidth number
 ---@param outerWidth number
 ---@param colCount integer
----@return List<{ L: number | nil, R: number | nil }>
+---@return List<{ L: number, R: number }>
 local function makeColBorders(innerWidth, outerWidth, colCount)
 	local borders = pandoc.List({})
 	for i = 1, colCount do
 		if i == 1 then
-			borders:insert({ L = outerWidth })
+			borders:insert({ L = outerWidth, R = 0 })
 		elseif i == colCount then
-			borders:insert({ R = outerWidth })
+			borders:insert({ L = 0, R = outerWidth })
 		else
-			borders:insert({ L = innerWidth })
+			borders:insert({ L = innerWidth, R = 0 })
 		end
 	end
 	return borders
@@ -55,24 +57,23 @@ end
 ---@param y integer
 ---@param t List<List<contentCell | mergeCell>>
 ---@param colCount integer
----@return { T: List<{ Width: number | nil, Length: integer }>, B: List<{ Width: number | nil, Length: integer }> }
+---@return { T: List<{ Width: number, Length: integer }>, B: List<{ Width: number, Length: integer }> }
 local function getRowBorderSegments(y, t, colCount)
-	---@type { T: List<{ Width: number | nil, Length: integer }>, B: List<{ Width: number | nil, Length: integer }> }
+	---@type { T: List<{ Width: number, Length: integer }>, B: List<{ Width: number, Length: integer }> }
 	local rBorderSegments = { T = pandoc.List({}), B = pandoc.List({}) }
 
-	local rBorderSegment = { T = { Width = nil, Length = 0 }, B = { Width = nil, Length = 0 } }
+	local rBorderSegment = { T = { Width = 0, Length = 0 }, B = { Width = 0, Length = 0 } }
 
 	for x = 1, colCount do
-		---@type { T: number | nil, B: number | nil }
-		local cBorder = { T = nil, B = nil }
+		local cBorder = { T = 0, B = 0 }
 
 		local c = t[y][x]
 		if c.Type == "contentCell" then
 			---@cast c contentCell
-			cBorder.T = c.Border.T or nil
 
+			cBorder.T = c.Border.T
 			if c.RowSpan == 1 then
-				cBorder.B = c.Border.B or nil
+				cBorder.B = c.Border.B
 			end
 		elseif c.Type == "mergeCell" then
 			---@cast c mergeCell
@@ -82,9 +83,9 @@ local function getRowBorderSegments(y, t, colCount)
 			---@cast ofC contentCell
 
 			if y == c.Of.Y then
-				cBorder.T = ofC.Border.T or nil
+				cBorder.T = ofC.Border.T
 			elseif y == c.Of.Y + ofC.RowSpan - 1 then
-				cBorder.B = ofC.Border.B or nil
+				cBorder.B = ofC.Border.B
 			end
 		else
 			assert(false)
@@ -112,36 +113,80 @@ local function getRowBorderSegments(y, t, colCount)
 	if rBorderSegment.T.Length > 0 then
 		rBorderSegments.T:insert(rBorderSegment.T)
 	end
-	rBorderSegment.T = { Width = nil, Length = 0 }
+	rBorderSegment.T = { Width = 0, Length = 0 }
 
 	if rBorderSegment.B.Length > 0 then
 		rBorderSegments.B:insert(rBorderSegment.B)
 	end
-	rBorderSegment.B = { Width = nil, Length = 0 }
+	rBorderSegment.B = { Width = 0, Length = 0 }
 
 	return rBorderSegments
 end
 
----@param borderWidth number
+---@param w number
 ---@return string
-local function makeBorderWidthLatexString(borderWidth)
-	return string.format("%.4f", borderWidth) .. "pt"
+local function makeBorderWidthLatexString(w)
+	return string.format("%.4f", w) .. "pt"
 end
 
----@param borderWidth number
----@return RawInline
-local function makeVerticalBorderLatex(borderWidth)
-	return pandoc.RawInline("latex", "!{\\vrule width " .. makeBorderWidthLatexString(borderWidth) .. "}")
-end
-
----@param borderWidth number
----@param startX? integer | nil
----@param endX? integer | nil
----@param source string|nil
----@return RawInline
-local function makeHorizontalBorderLatex(borderWidth, startX, endX, source)
-	if startX ~= nil or endX ~= nil then
-		log.Warning("the table has a partial horizontal border due to spans which is not supported yet", source)
+---@param w number
+---@param config config
+---@return string
+local function makeVerticalBorderLatexString(w, config)
+	if w == 0 then
+		return ""
+	elseif w == config.arrayRuleWidth then
+		return "|"
+	else
+		return "!{\\vrule width " .. makeBorderWidthLatexString(w) .. "}"
 	end
-	return pandoc.RawInline("latex", "\\specialrule{" .. makeBorderWidthLatexString(borderWidth) .. "}{0pt}{0pt}")
+end
+
+---@param widthSegments List<{ Width: number, Length: integer }>
+---@param source string|nil
+---@param config config
+---@return string
+local function makeHorizontalBorderSegmentsLatexString(widthSegments, source, config)
+	local s = ""
+
+	local x = 1
+	for _, w in ipairs(widthSegments) do
+		if w.Width == 0 then
+			x = x + w.Length
+		else
+			if w.Width ~= config.arrayRuleWidth then
+				log.Error("the table has a segmented horizontal border with unsupported width", source)
+				log.Note("use width " .. makeBorderWidthLatexString(config.arrayRuleWidth) .. " instead", source)
+			end
+			local x1, x2 = x, x + w.Length - 1
+			s = s .. "\\cline{" .. x1 .. "-" .. x2 .. "}"
+			x = x2 + 1
+		end
+	end
+
+	return s
+end
+
+---@param widthSegments List<{ Width: number, Length: integer }>
+---@param source string|nil
+---@param config config
+---@return string
+local function makeHorizontalBorderLatexString(widthSegments, source, config)
+	if #widthSegments == 0 then
+		return ""
+	end
+
+	if #widthSegments == 1 then
+		local w = widthSegments[1].Width
+
+		if w == 0 then
+			return ""
+		elseif w == config.arrayRuleWidth then
+			return "\\hline"
+		else
+			return "\\specialrule{" .. makeBorderWidthLatexString(w) .. "}{0pt}{0pt}"
+		end
+	end
+
+	return makeHorizontalBorderSegmentsLatexString(widthSegments, source, config)
 end

@@ -20,3 +20,6 @@
 ---@class mergeCell
 ---@field Type "mergeCell"
 ---@field Of { X: integer, Y: integer }
+
+---@class config
+---@field arrayRuleWidth number # https://tex.stackexchange.com/questions/122956/how-thick-a-rule-does-hline-produce
