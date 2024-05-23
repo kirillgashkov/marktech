@@ -1,3 +1,7 @@
+local width = require("writer_table.width")
+
+local alignment = {}
+
 ---@param pa Alignment
 ---@return "left" | "center" | "right" | nil
 local function getAlignment(pa)
@@ -20,7 +24,7 @@ end
 
 ---@param colSpecs List<ColSpec>
 ---@return List<"left" | "center" | "right">
-local function makeColAlignments(colSpecs)
+function alignment.MakeColAlignments(colSpecs)
 	local alignments = pandoc.List({})
 
 	for _, colSpec in ipairs(colSpecs) do
@@ -31,62 +35,59 @@ local function makeColAlignments(colSpecs)
 	return alignments
 end
 
----@param alignment "left" | "center" | "right"
----@return RawInline
-local function makeMaxWidthAlignmentLatex(alignment)
-	if alignment == "left" then
-		return pandoc.RawInline("latex", "l")
-	elseif alignment == "center" then
-		return pandoc.RawInline("latex", "c")
-	elseif alignment == "right" then
-		return pandoc.RawInline("latex", "r")
-	else
-		assert(false)
-	end
-end
+---@param a "left" | "center" | "right"
+---@return string
+local function makeMaxWidthColAlignmentLatexString(a)
+	local s
 
----@param alignment "left" | "center" | "right"
----@param width "max-width" | number
----@param border { L: number | nil, R: number | nil }
----@return RawInline
-local function makeNumberWidthAlignmentLatex(alignment, width, border)
-	local raggedOrCenteringLatex
-	if alignment == "left" then
-		raggedOrCenteringLatex = "\\raggedright"
-	elseif alignment == "center" then
-		raggedOrCenteringLatex = "\\centering"
-	elseif alignment == "right" then
-		raggedOrCenteringLatex = "\\raggedleft"
+	if a == "left" then
+		s = "l"
+	elseif a == "center" then
+		s = "c"
+	elseif a == "right" then
+		s = "r"
 	else
 		assert(false)
 	end
 
-	return pandoc.RawInline(
-		"latex",
-		(
-			">{"
-			.. raggedOrCenteringLatex
-			.. "\\arraybackslash"
-			.. "}"
-			.. "p{"
-			.. makeWidthLatexString(width, border)
-			.. "}"
-		)
-	)
+	return s
 end
 
----@param alignment "left" | "center" | "right"
----@param width "max-width" | number
----@param border { L: number | nil, R: number | nil }
----@return RawInline
-local function makeAlignmentLatex(alignment, width, border)
-	local latex
-	if width == "max-width" then
-		latex = makeMaxWidthAlignmentLatex(alignment)
-	elseif type(width) == "number" then
-		latex = makeNumberWidthAlignmentLatex(alignment, width, border)
+---@param a "left" | "center" | "right" # Alignment.
+---@param w number # Width.
+---@param b { L: number, R: number } # Border.
+---@return string
+local function makeWidthColAlignmentLatex(a, w, b)
+	local m
+	if a == "left" then
+		m = "\\raggedright"
+	elseif a == "center" then
+		m = "\\centering"
+	elseif a == "right" then
+		m = "\\raggedleft"
 	else
 		assert(false)
 	end
-	return latex
+
+	return (">{" .. m .. "\\arraybackslash" .. "}" .. "p{" .. width.MakeColWidthLatex(w, b) .. "}")
 end
+
+---@param a "left" | "center" | "right" # Alignment.
+---@param w number | nil # Width. Numbers are percentages. Nil behaves like CSS's "max-width".
+---@param b { L: number, R: number } # Border. Numbers are in points.
+---@return string
+function alignment.MakeColAlignmentLatex(a, w, b)
+	local s
+
+	if type(w) == "number" then
+		s = makeWidthColAlignmentLatex(a, w, b)
+	elseif w == nil then
+		s = makeMaxWidthColAlignmentLatexString(a)
+	else
+		assert(false)
+	end
+
+	return s
+end
+
+return alignment

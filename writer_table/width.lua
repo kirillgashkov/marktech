@@ -35,11 +35,11 @@ function width.MakeColWidths(colSpecs, source)
 	return widths
 end
 
----@param w number # Percentage.
----@param colBorder { L: number, R: number }
+---@param w number # Width. Numbers are percentages. Nil behaves like CSS's "max-width".
+---@param b { L: number, R: number } # Border. Numbers are in points.
 ---@return string
-function width.MakeColWidthLatex(w, colBorder)
-	return utility.makePercentWidthLatex(w) .. " - " .. utility.MakeFixedWidthLatex(colBorder.L + colBorder.R)
+function width.MakeColWidthLatex(w, b)
+	return utility.makePercentWidthLatex(w) .. " - " .. utility.MakeFixedWidthLatex(b.L + b.R)
 end
 
 return width
