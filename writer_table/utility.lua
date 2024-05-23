@@ -1,5 +1,3 @@
-local fun = require("fun")
-
 local utility = {}
 
 ---@param w number
