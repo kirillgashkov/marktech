@@ -52,6 +52,76 @@ local function makeColBorders(innerWidth, outerWidth, colCount)
 	return borders
 end
 
+---@param y integer
+---@param t List<List<contentCell | mergeCell>>
+---@param colCount integer
+---@return { T: List<{ Width: number | nil, Length: integer }>, B: List<{ Width: number | nil, Length: integer }> }
+local function getRowBorderSegments(y, t, colCount)
+	---@type { T: List<{ Width: number | nil, Length: integer }>, B: List<{ Width: number | nil, Length: integer }> }
+	local rBorderSegments = { T = pandoc.List({}), B = pandoc.List({}) }
+
+	local rBorderSegment = { T = { Width = nil, Length = 0 }, B = { Width = nil, Length = 0 } }
+
+	for x = 1, colCount do
+		---@type { T: number | nil, B: number | nil }
+		local cBorder = { T = nil, B = nil }
+
+		local c = t[y][x]
+		if c.Type == "contentCell" then
+			---@cast c contentCell
+			cBorder.T = c.Border.T or nil
+
+			if c.RowSpan == 1 then
+				cBorder.B = c.Border.B or nil
+			end
+		elseif c.Type == "mergeCell" then
+			---@cast c mergeCell
+
+			local ofC = t[c.Of.Y][c.Of.X]
+			assert(ofC.Type == "contentCell")
+			---@cast ofC contentCell
+
+			if y == c.Of.Y then
+				cBorder.T = ofC.Border.T or nil
+			elseif y == c.Of.Y + ofC.RowSpan - 1 then
+				cBorder.B = ofC.Border.B or nil
+			end
+		else
+			assert(false)
+		end
+
+		if cBorder.T == rBorderSegment.T.Width then
+			rBorderSegment.T.Length = rBorderSegment.T.Length + 1
+		else
+			if rBorderSegment.T.Length > 0 then
+				rBorderSegments.T:insert(rBorderSegment.T)
+			end
+			rBorderSegment.T = { Width = cBorder.T, Length = 1 }
+		end
+
+		if cBorder.B == rBorderSegment.B.Width then
+			rBorderSegment.B.Length = rBorderSegment.B.Length + 1
+		else
+			if rBorderSegment.B.Length > 0 then
+				rBorderSegments.B:insert(rBorderSegment.B)
+			end
+			rBorderSegment.B = { Width = cBorder.B, Length = 1 }
+		end
+	end
+
+	if rBorderSegment.T.Length > 0 then
+		rBorderSegments.T:insert(rBorderSegment.T)
+	end
+	rBorderSegment.T = { Width = nil, Length = 0 }
+
+	if rBorderSegment.B.Length > 0 then
+		rBorderSegments.B:insert(rBorderSegment.B)
+	end
+	rBorderSegment.B = { Width = nil, Length = 0 }
+
+	return rBorderSegments
+end
+
 ---@param borderWidth number
 ---@return string
 local function makeBorderWidthLatexString(borderWidth)
