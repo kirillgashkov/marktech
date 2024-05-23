@@ -10,10 +10,10 @@
 ---@field Alignment "left" | "center" | "right"
 
 ---@class contentCellWithContentAlignmentWidth: contentCellWithContentAlignment
----@field Width "max-width" | number
+---@field Width number | nil
 
 ---@class contentCellWithContentAlignmentWidthBorder: contentCellWithContentAlignmentWidth
----@field Border { T: number | nil, B: number | nil, L: number | nil, R: number | nil }
+---@field Border { T: number, B: number, L: number, R: number }
 
 ---@alias contentCell contentCellWithContentAlignmentWidthBorder
 

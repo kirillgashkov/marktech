@@ -114,7 +114,7 @@ end
 ---@param source string|nil
 ---@param config config
 ---@return string
-local function makeHorizontalBorderSegmentsLatexString(segments, source, config)
+local function makeHorizontalBorderSegmentsLatex(segments, source, config)
 	local s = ""
 
 	local x = 1
@@ -138,7 +138,7 @@ end
 ---@param w number
 ---@param config config
 ---@return string
-function border.MakeVerticalBorderLatexString(w, config)
+function border.MakeVerticalBorderLatex(w, config)
 	if w == 0 then
 		return ""
 	elseif w == config.arrayRuleWidth then
@@ -154,7 +154,7 @@ end
 ---@param source string|nil
 ---@param config config
 ---@return string
-function border.MakeHorizontalBorderLatexStringForRowBorder(b, y, t, source, config)
+function border.MakeHorizontalBorderLatexForRowBorder(b, y, t, source, config)
 	local segments = getSegmentsForRowBorder(b, y, t)
 
 	if #segments == 0 then
@@ -173,7 +173,7 @@ function border.MakeHorizontalBorderLatexStringForRowBorder(b, y, t, source, con
 		end
 	end
 
-	return makeHorizontalBorderSegmentsLatexString(segments, source, config)
+	return makeHorizontalBorderSegmentsLatex(segments, source, config)
 end
 
 return border
