@@ -35,6 +35,13 @@ function alignment.MakeColAlignments(colSpecs)
 	return alignments
 end
 
+---@param c Cell
+---@param colAlignment "left" | "center" | "right"
+---@return "left" | "center" | "right"
+function alignment.MakeCellAlignment(c, colAlignment)
+	return getAlignment(c.alignment) or colAlignment
+end
+
 ---@param a "left" | "center" | "right"
 ---@return string
 local function makeMaxWidthColAlignmentLatexString(a)
@@ -54,8 +61,8 @@ local function makeMaxWidthColAlignmentLatexString(a)
 end
 
 ---@param a "left" | "center" | "right" # Alignment.
----@param w number # Width.
----@param b { L: number, R: number } # Border.
+---@param w length # Width.
+---@param b { L: length, R: length } # Border.
 ---@return string
 local function makeWidthColAlignmentLatex(a, w, b)
 	local m
@@ -73,13 +80,13 @@ local function makeWidthColAlignmentLatex(a, w, b)
 end
 
 ---@param a "left" | "center" | "right" # Alignment.
----@param w number | nil # Width. Numbers are percentages. Nil behaves like CSS's "max-width".
----@param b { L: number, R: number } # Border. Numbers are in points.
+---@param w length | nil # Width. Nil behaves like CSS's "max-width".
+---@param b { L: length, R: length } # Border.
 ---@return string
 function alignment.MakeColAlignmentLatex(a, w, b)
 	local s
 
-	if type(w) == "number" then
+	if type(w) == "table" then
 		s = makeWidthColAlignmentLatex(a, w, b)
 	elseif w == nil then
 		s = makeMaxWidthColAlignmentLatexString(a)

@@ -1,5 +1,7 @@
 ---@meta
 
+---@class length: { ["pt" | "%"]: number | nil }
+--
 ---@class contentCellWithContent
 ---@field Type "contentCell"
 ---@field Content Inlines
@@ -10,10 +12,10 @@
 ---@field Alignment "left" | "center" | "right"
 
 ---@class contentCellWithContentAlignmentWidth: contentCellWithContentAlignment
----@field Width number | nil
+---@field Width length | nil
 
 ---@class contentCellWithContentAlignmentWidthBorder: contentCellWithContentAlignmentWidth
----@field Border { T: number, B: number, L: number, R: number }
+---@field Border { T: length, B: length, L: length, R: length }
 
 ---@alias contentCell contentCellWithContentAlignmentWidthBorder
 
@@ -22,4 +24,4 @@
 ---@field Of { X: integer, Y: integer }
 
 ---@class config
----@field arrayRuleWidth number # https://tex.stackexchange.com/questions/122956/how-thick-a-rule-does-hline-produce
+---@field arrayRuleWidth length # https://tex.stackexchange.com/questions/122956/how-thick-a-rule-does-hline-produce
