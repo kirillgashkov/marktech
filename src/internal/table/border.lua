@@ -1,5 +1,5 @@
-local log = require("log")
-local utility = require("writer_table.utility")
+local log = require("internal.log")
+local utility = require("internal.table.utility")
 
 local border = {}
 

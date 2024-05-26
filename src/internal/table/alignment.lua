@@ -1,4 +1,4 @@
-local width = require("writer_table.width")
+local width = require("internal.table.width")
 
 local alignment = {}
 

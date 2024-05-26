@@ -1,6 +1,6 @@
-local fun = require("fun")
-local spec = require("writer_table.spec")
-local width = require("writer_table.width")
+local fun = require("internal.fun")
+local spec = require("internal.table.spec")
+local width = require("internal.table.width")
 
 local multirowcol = {}
 

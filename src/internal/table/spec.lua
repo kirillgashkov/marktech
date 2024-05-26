@@ -1,5 +1,5 @@
-local border = require("writer_table.border")
-local alignment = require("writer_table.alignment")
+local border = require("internal.table.border")
+local alignment = require("internal.table.alignment")
 
 local spec = {}
 

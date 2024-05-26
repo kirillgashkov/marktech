@@ -1,8 +1,8 @@
-local file = require("file")
-local fun = require("fun")
-local log = require("log")
-
 assert(tostring(PANDOC_API_VERSION) == "1.23.1", "Unsupported Pandoc API")
+
+local file = require("internal.file")
+local fun = require("internal.fun")
+local log = require("internal.log")
 
 local filter = {}
 
