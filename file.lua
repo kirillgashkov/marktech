@@ -1,8 +1,8 @@
-local M = {}
+local file = {}
 
 ---@param path string
 ---@return boolean
-function M.Exists(path)
+function file.Exists(path)
 	local f = io.open(path)
 	if f then
 		f:close()
@@ -25,14 +25,14 @@ end
 
 ---@param path string
 ---@return string|nil
-function M.Read(path)
+function file.Read(path)
 	return read(path, "r")
 end
 
 ---@param path string
 ---@return string|nil
-function M.ReadBytes(path)
+function file.ReadBytes(path)
 	return read(path, "rb")
 end
 
-return M
+return file

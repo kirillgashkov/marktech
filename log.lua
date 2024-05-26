@@ -1,7 +1,7 @@
-M = {}
+local log = {}
 
 ---@type "text"|"json"
-M.Format = "text"
+log.Format = "text"
 
 ---@param type "panic" | "error" | "warning" | "note"
 ---@param message string
@@ -49,12 +49,12 @@ end
 ---@param message string
 ---@param source? string
 ---@param code? string|nil
-function M.log(type, message, source, code)
+function log.message(type, message, source, code)
 	local s = ""
 
-	if M.Format == "text" then
+	if log.Format == "text" then
 		s = makeTextLog(type, message, source, code)
-	elseif M.Format == "json" then
+	elseif log.Format == "json" then
 		s = makeJsonLog(type, message, source, code)
 	else
 		assert(false)
@@ -66,29 +66,22 @@ end
 ---@param message string
 ---@param source? string|nil
 ---@param code? string|nil
-function M.Panic(message, source, code)
-	M.log("panic", message, source, code)
+function log.Error(message, source, code)
+	log.message("error", message, source, code)
 end
 
 ---@param message string
 ---@param source? string|nil
 ---@param code? string|nil
-function M.Error(message, source, code)
-	M.log("error", message, source, code)
+function log.Warning(message, source, code)
+	log.message("warning", message, source, code)
 end
 
 ---@param message string
 ---@param source? string|nil
 ---@param code? string|nil
-function M.Warning(message, source, code)
-	M.log("warning", message, source, code)
+function log.Note(message, source, code)
+	log.message("note", message, source, code)
 end
 
----@param message string
----@param source? string|nil
----@param code? string|nil
-function M.Note(message, source, code)
-	M.log("note", message, source, code)
-end
-
-return M
+return log
