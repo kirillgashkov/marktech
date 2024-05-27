@@ -11,7 +11,10 @@ local length = {}
 ---@param b length
 ---@return length
 function length.Add(a, b)
-  local c = a
+  local c = {}
+  for u, v in pairs(a) do
+    c[u] = v
+  end
   for u, v in pairs(b) do
     c[u] = (c[u] or 0) + v
   end
@@ -22,7 +25,10 @@ end
 ---@param b length
 ---@return length
 function length.Subtract(a, b)
-  local c = a
+  local c = {}
+  for u, v in pairs(a) do
+    c[u] = v
+  end
   for u, v in pairs(b) do
     c[u] = (c[u] or 0) - v
   end
