@@ -498,14 +498,14 @@ end
 local function makeOtherHeadCaptionRowLatex(id, caption)
   if isNumberedCaption(id, caption) then
     return merge({
-      raw([[\captionsetup{style=customNumberedTableContinuation}]]),
+      raw([[\captionsetup{style=templateTableNumberedContinuation}]]),
       raw([[\caption[]{}]]),
       pandoc.Space(),
       raw([[\\*]]),
     })
   else
     return merge({
-      raw([[\captionsetup{style=customUnnumberedTableContinuation}]]),
+      raw([[\captionsetup{style=templateTableUnnumberedContinuation}]]),
       raw([[\caption*{}]]),
       pandoc.Space(),
       raw([[\\*]]),

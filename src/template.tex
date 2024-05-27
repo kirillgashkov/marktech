@@ -197,12 +197,55 @@ $endif$
 
 \usepackage{longtable}
 
+
 % Provides \specialrule command.
 \usepackage{booktabs}
+
 
 % Provides "!" column type.
 \usepackage{array}
 
+
+\usepackage{caption}
+
+\DeclareCaptionLabelSeparator{templateDash}{ --- }
+
+\captionsetup[table]{
+  format=plain,
+  labelformat=simple,
+  labelsep=templateDash,
+  justification=justified,
+  singlelinecheck=false,
+  width=\linewidth,
+  position=above,
+  skip=0.5\baselineskip,
+}
+
+\DeclareCaptionLabelFormat{templateTableNumberedContinuation}{\emph{Продолжение таблицы #2}}
+\DeclareCaptionStyle{templateTableNumberedContinuation}{
+  format=plain,
+  labelformat=templateTableNumberedContinuation,
+  labelsep=none,
+  textformat=empty,
+  justification=justified,
+  singlelinecheck=false,
+  width=\linewidth,
+  position=above,
+  skip=0.5\baselineskip,
+}
+
+\DeclareCaptionFormat{templateTableUnnumberedContinuation}{\emph{Продолжение таблицы}#2#3\par}
+\DeclareCaptionStyle{templateTableUnnumberedContinuation}{
+  format=templateTableUnnumberedContinuation,
+  labelformat=empty,
+  labelsep=none,
+  textformat=empty,
+  justification=justified,
+  singlelinecheck=false,
+  width=\linewidth,
+  position=above,
+  skip=0.5\baselineskip,
+}
 
 
 \begin{document}
