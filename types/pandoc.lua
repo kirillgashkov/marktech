@@ -213,7 +213,7 @@ function Inline:clone() end
 ---@field attributes Attributes
 ---@class Caption
 ---@field long Blocks
----@field short Inlines
+---@field short Inlines | nil
 ---@class Cell
 ---@field attr Attr # cell attributes
 ---@field alignment Alignment # individual cell alignment
@@ -293,7 +293,7 @@ function Inline:clone() end
 ---@field template Template|nil # Template to use
 ---@field toc_depth integer # Number of levels to include in TOC
 ---@field top_level_division string # Type of top-level divisions; one of ‘top-level-part’, ‘top-level-chapter’, ‘top-level-section’, or ‘top-level-default’. The prefix top-level may be omitted when setting this value.
----@field variables table # Variables to set in template; string-indexed table
+---@field variables { [string]: pandoc.Variable } # Variables to set in template; string-indexed table
 ---@field wrap_text string # Option for wrapping text; one of ‘wrap-auto’, ‘wrap-none’, or ‘wrap-preserve’. The wrap- prefix may be omitted when setting this value.
 
 ---List of key/value pairs. Values can be accessed by using keys as indices to the list table.
@@ -599,3 +599,7 @@ function pandoc.WriterOptions(opts) end
 ---Sources hasn't been found in the official documentation but it has been inferred.
 ---@class pandoc.Sources: List<pandoc.Source>
 ---@field __tostring fun(): string  # (Probably) returns just the concatenated text of all sources.
+
+---Variable hasn't been found in the official documentation but it has been inferred.
+---@class pandoc.Variable
+---@field render fun(): string # (Probably) returns the value of the variable.

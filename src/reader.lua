@@ -1,8 +1,11 @@
----@param sources pandoc.Sources
+local log = require("internal.log")
+local element = require("internal.element")
+
+---@param input string | pandoc.Sources
 ---@param options pandoc.ReaderOptions
 ---@return Pandoc
-function Reader(sources, options)
-	local d = pandoc.read(sources, {
+local function read(input, options)
+	return pandoc.read(input, {
 		format = "commonmark",
 		extensions = {
 			-- GFM extensions.
@@ -19,8 +22,51 @@ function Reader(sources, options)
 			"bracketed_spans",
 			"implicit_figures", -- TODO: Replace with a custom filter.
 			"smart",
+			"sourcepos",
 		},
 	}, options)
+end
+
+---@param input string | pandoc.Sources
+---@param options pandoc.ReaderOptions
+---@return Blocks
+local function readBlocks(input, options)
+	return read(input, options).blocks
+end
+
+---@param input string | pandoc.Sources
+---@param options pandoc.ReaderOptions
+---@return Inlines
+local function readInlines(input, options)
+	return pandoc.utils.blocks_to_inlines(readBlocks(input, options))
+end
+
+---@param sources pandoc.Sources
+---@param options pandoc.ReaderOptions
+---@return Pandoc
+function Reader(sources, options)
+	local d = read(sources, options)
+
+	d = d:walk({
+		---@param t Table
+		---@return Table
+		Table = function(t)
+			local captionString = t.attr.attributes["caption"] or ""
+
+			if captionString ~= "" then
+				if #t.caption.long > 0 or t.caption.short ~= nil and #t.caption.short > 0 then
+					log.Warning(
+						"table already has a caption, the caption attribute will take precedence",
+						element.GetSource(t)
+					)
+				end
+
+				t.caption = { long = readBlocks(captionString, options), short = pandoc.Inlines({}) }
+			end
+
+			return t
+		end,
+	})
 
 	return d
 end
