@@ -39,8 +39,8 @@ local function makeNewRows(pandocRows, rowCount, colCount, source)
       if rows[y][x] == nil then
         local cell = pandocRows[y].cells[cellIndex]
 
-        for yOffset = 0, cell.row_span do
-          for xOffset = 0, cell.col_span do
+        for yOffset = 0, cell.row_span - 1 do
+          for xOffset = 0, cell.col_span - 1 do
             if y + yOffset > rowCount then
               log.Error("the table has a cell that spans beyond the row count", source)
               assert(false)
