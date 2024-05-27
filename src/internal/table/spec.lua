@@ -32,7 +32,7 @@ end
 function spec.MakeAllLatex(colAlignments, colWidths, colBorders, config)
   local inlines = pandoc.Inlines({})
   for i = 1, #colAlignments do
-    inlines:extend(spec.MakeLatex(colAlignments[i], colWidths[i], colBorders[i], config))
+    inlines:insert(spec.MakeLatex(colAlignments[i], colWidths[i], colBorders[i], config))
   end
   return element.Merge(inlines)
 end
