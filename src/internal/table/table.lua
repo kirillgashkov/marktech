@@ -559,8 +559,8 @@ end
 ---@return Block
 function table_.MakeLatex(t)
   local tableConfig = {
-    OuterBorderWidth = length.Pt(1),
-    InnerBorderWidth = length.Pt(0.5),
+    OuterBorderWidth = { Pt = 1 },
+    InnerBorderWidth = { Pt = 0.5 },
     SeparateHead = false,
     RepeatHead = false,
     SeparateFoot = false,
@@ -568,7 +568,7 @@ function table_.MakeLatex(t)
   }
   local table = makeTable(t, tableConfig)
   local config = {
-    ArrayRuleWidth = length.Pt(0.4),
+    ArrayRuleWidth = { Pt = 0.4 },
   }
   return makeTableLatex(table, tableConfig, config)
 end
