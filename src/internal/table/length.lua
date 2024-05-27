@@ -64,72 +64,79 @@ end
 ---@param l length
 ---@return Inline
 function length.MakeWidthLatex(l)
-  local addends = pandoc.Inlines({})
+  local toAdd = pandoc.Inlines({})
+  local toSubtract = pandoc.Inlines({})
+
   for u, v in pairs(l) do
+    local component
     if u == "pt" then
-      -- Parentheses help with negative values.
-      addends:insert(merge({
-        raw("("),
-        raw(string.format("%.4f", v)),
-        raw("pt"),
-        raw(")"),
-      }))
+      component = merge({ raw(string.format("%.4f", math.abs(v))), raw("pt") })
     elseif u == "%" then
-      addends:insert(merge({
+      component = merge({
         raw([[(]]),
-        merge({ raw([[\real]]), raw([[{]]), raw(string.format("%.4f", v)), raw([[}]]) }),
+        merge({ raw([[\real]]), raw([[{]]), raw(string.format("%.4f", math.abs(v))), raw([[}]]) }),
         raw([[*]]),
         raw([[\textwidth]]),
         raw([[)]]),
-      }))
+      })
     else
       log.Error("unsupported width unit: " .. u)
       assert(false)
     end
+
+    if v > 0 then
+      toAdd:insert(component)
+    elseif v < 0 then
+      toSubtract:insert(component)
+    end
   end
-  return #addends == 0 and raw("0pt") or merge(fun.Intersperse(addends, raw(" + ")))
+
+  if #toAdd == 0 and #toSubtract == 0 then
+    return raw("0pt")
+  end
+
+  return merge({
+    #toAdd > 0 and merge(fun.Intersperse(toAdd, raw(" + "))) or merge({}),
+    #toSubtract > 0 and merge({ raw(" - "), merge(fun.Intersperse(toSubtract, raw(" - "))) }) or merge({}),
+  })
 end
 
 ---@param l length
 ---@return Inline
 function length.MakeHeightLatex(l)
-  local addends = pandoc.Inlines({})
-  for u, v in pairs(l) do
-    if u == "pt" then
-      -- Parentheses help with negative values.
-      addends:insert(merge({
-        raw("("),
-        raw(string.format("%.4f", v)),
-        raw("pt"),
-        raw(")"),
-      }))
-    else
-      log.Error("unsupported width unit: " .. u)
-      assert(false)
-    end
-  end
-  return #addends == 0 and raw("0pt") or merge(fun.Intersperse(addends, raw(" + ")))
+  return length.MakeLatex(l)
 end
 
 ---@param l length
 ---@return Inline
 function length.MakeLatex(l)
-  local addends = pandoc.Inlines({})
+  local toAdd = pandoc.Inlines({})
+  local toSubtract = pandoc.Inlines({})
+
   for u, v in pairs(l) do
+    local component
     if u == "pt" then
-      -- Parentheses help with negative values.
-      addends:insert(merge({
-        raw("("),
-        raw(string.format("%.4f", v)),
-        raw("pt"),
-        raw(")"),
-      }))
+      component = merge({ raw(string.format("%.4f", math.abs(v))), raw("pt") })
     else
       log.Error("unsupported width unit: " .. u)
       assert(false)
     end
+
+    if v > 0 then
+      toAdd:insert(component)
+    elseif v < 0 then
+      toSubtract:insert(component)
+    end
   end
-  return #addends == 0 and raw("0pt") or merge(fun.Intersperse(addends, raw(" + ")))
+
+  if #toAdd == 0 and #toSubtract == 0 then
+    return raw("0pt")
+  end
+
+  return merge({
+    #toAdd > 0 and merge(fun.Intersperse(toAdd, raw(" + "))) or merge({}),
+    #toSubtract > 0 and merge({ raw(" - "), merge(fun.Intersperse(toSubtract, raw(" - "))) }) or merge({}),
+  })
 end
 
 return length
