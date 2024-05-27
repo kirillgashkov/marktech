@@ -64,18 +64,18 @@ local function dump(o)
   end
 end
 
----@param type "panic" | "error" | "warning" | "note"
+---@param logType "panic" | "error" | "warning" | "note"
 ---@param message any
 ---@param source? string
 ---@param code? string|nil
-function log.message(type, message, source, code)
+function log.message(logType, message, source, code)
   local s = ""
 
-  local m = dump(message)
+  local m = type(message) == "string" and message or dump(message)
   if log.Format == "text" then
-    s = makeTextLog(type, m, source, code)
+    s = makeTextLog(logType, m, source, code)
   elseif log.Format == "json" then
-    s = makeJsonLog(type, m, source, code)
+    s = makeJsonLog(logType, m, source, code)
   else
     assert(false)
   end
