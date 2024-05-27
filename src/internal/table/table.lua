@@ -221,16 +221,16 @@ local function makeContentCellLatex(x, y, rows, colAlignments, config)
   assert(c.Type == "contentCell")
   ---@cast c contentCell
 
-  local inlines = c.Content
+  local inline = merge(c.Content)
 
   if multirowcol.IsMultirow(c) then
-    inlines = multirowcol.MakeMultirowLatex(inlines, c)
+    inline = multirowcol.MakeMultirowLatex(inline, c)
   end
   if multirowcol.IsMulticol(c, x, colAlignments) then
-    inlines = multirowcol.MakeMulticolLatex(inlines, c, config)
+    inline = multirowcol.MakeMulticolLatex(inline, c, config)
   end
 
-  return merge(inlines)
+  return inline
 end
 
 ---@param x integer
@@ -249,13 +249,13 @@ local function makeMergeCellLatex(x, y, rows, colAlignments, config)
   ---@cast ofC contentCell
 
   if multirowcol.IsMultirow(ofC) and x == c.Of.X then
-    local inlines = pandoc.Inlines({})
+    local inline = merge({})
 
     if multirowcol.IsMulticol(ofC, c.Of.X, colAlignments) then
-      inlines = multirowcol.MakeMulticolLatex(inlines, ofC, config)
+      inline = multirowcol.MakeMulticolLatex(inline, ofC, config)
     end
 
-    return merge(inlines)
+    return inline
   end
 
   return nil

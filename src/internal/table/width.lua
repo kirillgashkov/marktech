@@ -33,10 +33,10 @@ function width.MakeColWidths(colSpecs)
   return widths
 end
 
----@param w length # Width. Nil behaves like CSS's "max-width".
+---@param w length # Width.
 ---@param b { L: length, R: length } # Border.
----@return string
-function width.MakeColWidthLatex(w, b)
+---@return Inline
+function width.MakeLatex(w, b)
   return length.MakeWidthLatex(length.Subtract(w, length.Add(b.L, b.R)))
 end
 

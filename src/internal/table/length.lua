@@ -1,4 +1,9 @@
 local log = require("internal.log")
+local fun = require("internal.fun")
+
+local element = require("internal.element")
+local merge = element.Merge
+local raw = element.Raw
 
 local length = {}
 
@@ -57,51 +62,74 @@ function length.IsZero(l)
 end
 
 ---@param l length
----@return string
+---@return Inline
 function length.MakeWidthLatex(l)
-  -- Every value is enclosed in parentheses to avoid issues with negative values.
-  local values = {}
+  local addends = pandoc.Inlines({})
   for u, v in pairs(l) do
     if u == "pt" then
-      table.insert(values, "(" .. string.format("%.4f", v) .. "pt" .. ")")
+      -- Parentheses help with negative values.
+      addends:insert(merge({
+        raw("("),
+        raw(string.format("%.4f", v)),
+        raw("pt"),
+        raw(")"),
+      }))
     elseif u == "%" then
-      table.insert(values, "(" .. "\\real{" .. string.format("%.4f", v) .. "}" .. " * " .. "\\textwidth" .. ")")
+      addends:insert(merge({
+        raw([[(]]),
+        merge({ raw([[\real]]), raw([[{]]), raw(string.format("%.4f", v)), raw([[}]]) }),
+        raw([[*]]),
+        raw([[\textwidth]]),
+        raw([[)]]),
+      }))
     else
       log.Error("unsupported width unit: " .. u)
       assert(false)
     end
   end
-  return #values == 0 and "0pt" or table.concat(values, " + ")
+  return #addends == 0 and raw("0pt") or merge(fun.Intersperse(addends, raw(" + ")))
 end
 
 ---@param l length
----@return string
+---@return Inline
 function length.MakeHeightLatex(l)
-  local values = {}
+  local addends = pandoc.Inlines({})
   for u, v in pairs(l) do
     if u == "pt" then
-      table.insert(values, string.format("%.4f", v) .. "pt")
+      -- Parentheses help with negative values.
+      addends:insert(merge({
+        raw("("),
+        raw(string.format("%.4f", v)),
+        raw("pt"),
+        raw(")"),
+      }))
     else
-      log.Error("unsupported height unit: " .. u)
+      log.Error("unsupported width unit: " .. u)
       assert(false)
     end
   end
-  return table.concat(values, " + ")
+  return #addends == 0 and raw("0pt") or merge(fun.Intersperse(addends, raw(" + ")))
 end
 
 ---@param l length
----@return string
-function length.MakeLengthLatex(l)
-  local values = {}
+---@return Inline
+function length.MakeLatex(l)
+  local addends = pandoc.Inlines({})
   for u, v in pairs(l) do
     if u == "pt" then
-      table.insert(values, string.format("%.4f", v) .. "pt")
+      -- Parentheses help with negative values.
+      addends:insert(merge({
+        raw("("),
+        raw(string.format("%.4f", v)),
+        raw("pt"),
+        raw(")"),
+      }))
     else
-      log.Error("unsupported length unit: " .. u)
+      log.Error("unsupported width unit: " .. u)
       assert(false)
     end
   end
-  return table.concat(values, " + ")
+  return #addends == 0 and raw("0pt") or merge(fun.Intersperse(addends, raw(" + ")))
 end
 
 return length

@@ -1,4 +1,8 @@
 local width = require("internal.table.width")
+local element = require("internal.element")
+
+local merge = element.Merge
+local raw = element.Raw
 
 local alignment = {}
 
@@ -43,53 +47,66 @@ function alignment.MakeCellAlignment(c, colAlignment)
 end
 
 ---@param a "left" | "center" | "right"
----@return string
-local function makeMaxWidthColAlignmentLatexString(a)
-  local s
-
+---@return Inline
+local function makeMaxWidthLatex(a)
+  local c
   if a == "left" then
-    s = "l"
+    c = "l"
   elseif a == "center" then
-    s = "c"
+    c = "c"
   elseif a == "right" then
-    s = "r"
+    c = "r"
   else
     assert(false)
   end
 
-  return s
+  return raw(c)
 end
 
 ---@param a "left" | "center" | "right" # Alignment.
 ---@param w length # Width.
 ---@param b { L: length, R: length } # Border.
----@return string
-local function makeWidthColAlignmentLatex(a, w, b)
-  local m
+---@return Inline
+local function makeLengthWidthLatex(a, w, b)
+  local c
   if a == "left" then
-    m = "\\raggedright"
+    c = [[\raggedright]]
   elseif a == "center" then
-    m = "\\centering"
+    c = [[\centering]]
   elseif a == "right" then
-    m = "\\raggedleft"
+    c = [[\raggedleft]]
   else
     assert(false)
   end
 
-  return (">{" .. m .. "\\arraybackslash" .. "}" .. "p{" .. width.MakeColWidthLatex(w, b) .. "}")
+  return merge({
+    merge({
+      raw([[>]]),
+      raw([[{]]),
+      raw(c),
+      raw([[\arraybackslash]]),
+      raw([[}]]),
+    }),
+    merge({
+      raw([[p]]),
+      raw([[{]]),
+      width.MakeLatex(w, b),
+      raw([[}]]),
+    }),
+  })
 end
 
 ---@param a "left" | "center" | "right" # Alignment.
 ---@param w length | nil # Width. Nil behaves like CSS's "max-width".
 ---@param b { L: length, R: length } # Border.
----@return string
-function alignment.MakeColAlignmentLatex(a, w, b)
+---@return Inline
+function alignment.MakeLatex(a, w, b)
   local s
 
   if type(w) == "table" then
-    s = makeWidthColAlignmentLatex(a, w, b)
+    s = makeLengthWidthLatex(a, w, b)
   elseif w == nil then
-    s = makeMaxWidthColAlignmentLatexString(a)
+    s = makeMaxWidthLatex(a)
   else
     assert(false)
   end

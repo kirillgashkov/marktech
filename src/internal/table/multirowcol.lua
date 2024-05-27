@@ -1,6 +1,9 @@
-local fun = require("internal.fun")
 local spec = require("internal.table.spec")
 local width = require("internal.table.width")
+
+local element = require("internal.element")
+local merge = element.Merge
+local raw = element.Raw
 
 local multirowcol = {}
 
@@ -18,42 +21,53 @@ function multirowcol.IsMulticol(c, x, colAlignments)
   return c.ColSpan > 1 or c.Alignment ~= colAlignments[x]
 end
 
----@param content Inlines # Used instead of c.content.
----@param c contentCell
----@return Inlines
-function multirowcol.MakeMultirowLatex(content, c)
-  return pandoc.Inlines(fun.Flatten({
-    {
-      pandoc.RawInline(
-        "latex",
-        ("\\multirow" .. ("{" .. c.RowSpan .. "}") .. ("{" .. width.MakeColWidthLatex(c.Width, c.Border) .. "}") .. "{")
-      ),
-    },
-    content,
-    { pandoc.RawInline("latex", "}") },
-  }))
+---@param content Inline
+---@param forCell contentCell
+---@return Inline
+function multirowcol.MakeMultirowLatex(content, forCell)
+  return merge({
+    raw([[\multirow]]),
+    merge({
+      raw([[{]]),
+      raw(tostring(forCell.RowSpan)),
+      raw([[}]]),
+    }),
+    merge({
+      raw([[{]]),
+      width.MakeLatex(forCell.Width, forCell.Border),
+      raw([[}]]),
+    }),
+    merge({
+      raw([[{]]),
+      content,
+      raw([[}]]),
+    }),
+  })
 end
 
----@param content Inlines # Used instead of c.content.
----@param c contentCell
+---@param content Inline
+---@param forCell contentCell
 ---@param config config
----@return Inlines
-function multirowcol.MakeMulticolLatex(content, c, config)
-  return pandoc.Inlines(fun.Flatten({
-    {
-      pandoc.RawInline(
-        "latex",
-        (
-          "\\multicol"
-          .. ("{" .. c.ColSpan .. "}")
-          .. ("{" .. spec.MakeColSpecLatex(c.Alignment, c.Width, c.Border, config) .. "}")
-          .. "{"
-        )
-      ),
-    },
-    content,
-    { pandoc.RawInline("latex", "}") },
-  }))
+---@return Inline
+function multirowcol.MakeMulticolLatex(content, forCell, config)
+  return merge({
+    raw([[\multicol]]),
+    merge({
+      raw([[{]]),
+      raw(tostring(forCell.ColSpan)),
+      raw([[}]]),
+    }),
+    merge({
+      raw([[{]]),
+      spec.MakeLatex(forCell.Alignment, forCell.Width, forCell.Border, config),
+      raw([[}]]),
+    }),
+    merge({
+      raw([[{]]),
+      content,
+      raw([[}]]),
+    }),
+  })
 end
 
 return multirowcol
