@@ -1,58 +1,45 @@
 local log = require("internal.log")
 local length = require("internal.table.length")
+local element = require("internal.element")
 
 local border = {}
 
----@param innerWidth length
----@param outerWidth length
----@param firstTop "inner" | "outer" | "none"
----@param lastBottom "inner" | "outer" | "none"
 ---@param rowCount integer
+---@param topWidth length
+---@param divideWidth length
+---@param bottomWidth length
 ---@return List<{ T: length, B: length }>
-function border.MakeRowBorders(innerWidth, outerWidth, firstTop, lastBottom, rowCount)
+function border.MakeRowBorders(rowCount, topWidth, divideWidth, bottomWidth)
 	local borders = pandoc.List({})
 	for i = 1, rowCount do
+		local b = { T = divideWidth, B = divideWidth }
 		if i == 1 then
-			if firstTop == "inner" then
-				borders:insert({ T = innerWidth, B = length.Zero() })
-			elseif firstTop == "outer" then
-				borders:insert({ T = outerWidth, B = length.Zero() })
-			elseif firstTop == "none" then
-				borders:insert({ T = length.Zero(), B = length.Zero() })
-			else
-				assert(false)
-			end
-		elseif i == rowCount then
-			if lastBottom == "inner" then
-				borders:insert({ T = length.Zero(), B = innerWidth })
-			elseif lastBottom == "outer" then
-				borders:insert({ T = length.Zero(), B = outerWidth })
-			elseif lastBottom == "none" then
-				borders:insert({ T = length.Zero(), B = length.Zero() })
-			else
-				assert(false)
-			end
-		else
-			borders:insert({ T = innerWidth, B = length.Zero() })
+			b.T = topWidth
 		end
+		if i == rowCount then
+			b.B = bottomWidth
+		end
+		borders:insert(b)
 	end
 	return borders
 end
 
----@param innerWidth length
----@param outerWidth length
 ---@param colCount integer
+---@param leftWidth length
+---@param divideWidth length
+---@param rightWidth length
 ---@return List<{ L: length, R: length }>
-function border.MakeColBorders(innerWidth, outerWidth, colCount)
+function border.MakeColBorders(colCount, leftWidth, divideWidth, rightWidth)
 	local borders = pandoc.List({})
 	for i = 1, colCount do
+		local b = { L = divideWidth, R = divideWidth }
 		if i == 1 then
-			borders:insert({ L = outerWidth, R = length.Zero() })
-		elseif i == colCount then
-			borders:insert({ L = length.Zero(), R = outerWidth })
-		else
-			borders:insert({ L = innerWidth, R = length.Zero() })
+			b.L = leftWidth
 		end
+		if i == colCount then
+			b.R = rightWidth
+		end
+		borders:insert(b)
 	end
 	return borders
 end
@@ -122,9 +109,9 @@ local function makeHorizontalBorderSegmentsLatex(segments, source, config)
 		if length.IsZero(w.Width) then
 			x = x + w.Length
 		else
-			if not length.IsEqual(w.Width, config.arrayRuleWidth) then
+			if not length.IsEqual(w.Width, config.ArrayRuleWidth) then
 				log.Error("the table has a segment of a horizontal border with unsupported width", source)
-				log.Note("use width " .. length.MakeLengthLatex(config.arrayRuleWidth) .. " instead", source)
+				log.Note("use width " .. length.MakeLengthLatex(config.ArrayRuleWidth) .. " instead", source)
 			end
 			local x1, x2 = x, x + w.Length - 1
 			s = s .. "\\cline{" .. x1 .. "-" .. x2 .. "}"
@@ -141,7 +128,7 @@ end
 function border.MakeVerticalBorderLatex(w, config)
 	if length.IsZero(w) then
 		return ""
-	elseif length.IsEqual(w, config.arrayRuleWidth) then
+	elseif length.IsEqual(w, config.ArrayRuleWidth) then
 		return "|"
 	else
 		return "!{\\vrule width " .. length.MakeLengthLatex(w) .. "}"
@@ -166,7 +153,7 @@ function border.MakeHorizontalBorderLatexForRowBorder(b, y, t, source, config)
 
 		if length.IsZero(w) then
 			return ""
-		elseif length.IsEqual(w, config.arrayRuleWidth) then
+		elseif length.IsEqual(w, config.ArrayRuleWidth) then
 			return "\\hline"
 		else
 			return "\\specialrule{" .. length.MakeLengthLatex(w) .. "}{0pt}{0pt}"
@@ -174,6 +161,78 @@ function border.MakeHorizontalBorderLatexForRowBorder(b, y, t, source, config)
 	end
 
 	return makeHorizontalBorderSegmentsLatex(segments, source, config)
+end
+
+---@param i integer # Border start index.
+---@param w length # Border width.
+---@param l integer # Border length.
+---@param maxIndex integer
+---@param config config
+---@param source? string | nil
+---@return Inline
+local function makeHorizontalLatex(i, w, l, maxIndex, config, source)
+	local useLine = length.IsEqual(w, config.ArrayRuleWidth)
+	local useFull = i == 1 and i + l - 1 == maxIndex
+
+	if useLine then
+		if useFull then
+			return element.Raw([[\hline"]])
+		else
+			return element.Raw([[\cline{]] .. i .. [[-]] .. i + l - 1 .. [[}]])
+		end
+	else
+		if useFull then
+			return element.Raw([[\specialrule{]] .. length.MakeLengthLatex(w) .. [[}{0pt}{0pt}]])
+		else
+			log.Error("table row has unsupported border width", source)
+			return element.Raw([[\cline{]] .. i .. [[-]] .. i + l - 1 .. [[}]])
+		end
+	end
+end
+
+---@param wr List<length> # Border width row.
+---@param config config
+---@return Inline
+function border.MakeHorizontalLatex(wr, config)
+	if #wr == 0 then
+		return element.Merge({})
+	end
+
+	local inlines = pandoc.List({})
+
+	local currentStart = 1
+	local currentWidth = wr[1]
+	local currentLength = 1
+
+	for i, w in ipairs(wr) do
+		if i > 1 then
+			if length.IsEqual(w, currentWidth) then
+				currentLength = currentLength + 1
+			else
+				inlines:insert(makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config))
+				currentStart = i
+				currentWidth = w
+				currentLength = 1
+			end
+		end
+	end
+
+	inlines:insert(makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config))
+
+	return element.Merge(inlines)
+end
+
+---@param w length
+---@param config config
+---@return Inline
+function border.MakeVerticalLatex(w, config)
+	if length.IsZero(w) then
+		return element.Raw("")
+	elseif length.IsEqual(w, config.ArrayRuleWidth) then
+		return element.Raw("|")
+	else
+		return element.Raw("!{\\vrule width " .. length.MakeLengthLatex(w) .. "}")
+	end
 end
 
 return border

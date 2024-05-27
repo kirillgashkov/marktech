@@ -6,7 +6,7 @@ local multirowcol = {}
 
 ---@param c contentCell
 ---@return boolean
-local function isMultirow(c)
+function multirowcol.IsMultirow(c)
 	return c.RowSpan > 1
 end
 
@@ -14,7 +14,7 @@ end
 ---@param x integer # The column index.
 ---@param colAlignments List<"left" | "center" | "right">
 ---@return boolean
-local function isMulticol(c, x, colAlignments)
+function multirowcol.IsMulticol(c, x, colAlignments)
 	return c.ColSpan > 1 or c.Alignment ~= colAlignments[x]
 end
 

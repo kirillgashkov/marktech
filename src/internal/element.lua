@@ -48,24 +48,28 @@ function element.MdBlock(s)
 	return element.MergeBlock(pandoc.read(s, mdFormat).blocks)
 end
 
-element.MergeFilter = {
-	---@param div Div
-	---@return Div | Blocks
-	Div = function(div)
-		if element.IsMerge(div.attr) then
-			return div.content
-		end
-		return div
-	end,
+---@param d Pandoc
+---@return Pandoc
+function element.RemoveMerges(d)
+	return d:walk({
+		---@param div Div
+		---@return Div | Blocks
+		Div = function(div)
+			if element.IsMerge(div.attr) then
+				return div.content
+			end
+			return div
+		end,
 
-	---@param span Span
-	---@return Span | Inlines
-	Span = function(span)
-		if element.IsMerge(span.attr) then
-			return span.content
-		end
-		return span
-	end,
-}
+		---@param span Span
+		---@return Span | Inlines
+		Span = function(span)
+			if element.IsMerge(span.attr) then
+				return span.content
+			end
+			return span
+		end,
+	})
+end
 
 return element
