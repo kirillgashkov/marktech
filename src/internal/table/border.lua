@@ -114,7 +114,7 @@ local function makeHorizontalBorderSegmentsLatex(segments, source, config)
         log.Note("use width " .. length.MakeLengthLatex(config.ArrayRuleWidth) .. " instead", source)
       end
       local x1, x2 = x, x + w.Length - 1
-      s = s .. "\\cline{" .. x1 .. "-" .. x2 .. "}"
+      s = s .. [[\cline]] .. [[{]] .. x1 .. [[-]] .. x2 .. [[}]]
       x = x2 + 1
     end
   end
@@ -131,7 +131,7 @@ function border.MakeVerticalBorderLatex(w, config)
   elseif length.IsEqual(w, config.ArrayRuleWidth) then
     return "|"
   else
-    return "!{\\vrule width " .. length.MakeLengthLatex(w) .. "}"
+    return [[!{\vrule width ]] .. length.MakeLengthLatex(w) .. [[}]]
   end
 end
 
@@ -154,9 +154,9 @@ function border.MakeHorizontalBorderLatexForRowBorder(b, y, t, source, config)
     if length.IsZero(w) then
       return ""
     elseif length.IsEqual(w, config.ArrayRuleWidth) then
-      return "\\hline"
+      return [[\hline]]
     else
-      return "\\specialrule{" .. length.MakeLengthLatex(w) .. "}{0pt}{0pt}"
+      return [[\specialrule]] .. [[{]] .. length.MakeLengthLatex(w) .. [[}]] .. [[{0pt}{0pt}]]
     end
   end
 
@@ -231,7 +231,7 @@ function border.MakeVerticalLatex(w, config)
   elseif length.IsEqual(w, config.ArrayRuleWidth) then
     return element.Raw("|")
   else
-    return element.Raw("!{\\vrule width " .. length.MakeLengthLatex(w) .. "}")
+    return element.Raw([[!{\vrule width ]] .. length.MakeLengthLatex(w) .. [[}]])
   end
 end
 
