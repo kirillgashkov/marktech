@@ -39,20 +39,20 @@ local function makeNewRows(pandocRows, rowCount, colCount, source)
       if rows[y][x] == nil then
         local cell = pandocRows[y].cells[cellIndex]
 
-        for y_offset = 0, cell.row_span do
-          for x_offset = 0, cell.col_span do
-            if y + y_offset > rowCount then
+        for yOffset = 0, cell.row_span do
+          for xOffset = 0, cell.col_span do
+            if y + yOffset > rowCount then
               log.Error("the table has a cell that spans beyond the row count", source)
               assert(false)
             end
-            if x + x_offset > colCount then
+            if x + xOffset > colCount then
               log.Error("the table has a cell that spans beyond the column count", source)
               assert(false)
             end
-            assert(rows[y + y_offset][x + x_offset] == nil)
+            assert(rows[y + yOffset][x + xOffset] == nil)
 
             local c
-            if y_offset == 0 and x_offset == 0 then
+            if yOffset == 0 and xOffset == 0 then
               local content = pandoc.utils.blocks_to_inlines(cell.contents, { pandoc.LineBreak() })
               ---@type contentCellWithContent
               c = {
@@ -65,7 +65,7 @@ local function makeNewRows(pandocRows, rowCount, colCount, source)
               ---@type mergeCell
               c = { Type = "mergeCell", Of = { X = x, Y = y } }
             end
-            rows[y + y_offset][x + x_offset] = c
+            rows[y + yOffset][x + xOffset] = c
           end
         end
 
