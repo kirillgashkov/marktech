@@ -1,5 +1,6 @@
 .*
 *~
 
-!.luarc.json
 !.gitignore
+!.luarc.json
+!.stylua.toml
