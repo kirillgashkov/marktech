@@ -252,7 +252,7 @@ function Inline:clone() end
 ---@field headers List<Inlines>
 ---@field rows List<List<Blocks>>
 ---@class Template
----@class ReaderOptions
+---@class pandoc.ReaderOptions
 ---@field abbreviations any # set of known abbreviations, originally set of strings
 ---@field columns integer # number of columns in terminal
 ---@field default_image_extension string # default extension for images
@@ -584,9 +584,18 @@ function pandoc.SimpleTable(caption, aligns, widths, headers, rows) end
 
 ---Known as ReaderOptions(opts).
 ---@param opts table
----@return ReaderOptions
+---@return pandoc.ReaderOptions
 function pandoc.ReaderOptions(opts) end
 ---Known as WriterOptions(opts).
 ---@param opts table
 ---@return WriterOptions
 function pandoc.WriterOptions(opts) end
+
+---Source hasn't been found in the official documentation but it has been inferred.
+---@class pandoc.Source
+---@field name string # Source name. E.g. "input.txt".
+---@field text string # Source text. E.g. "# Hello world".
+
+---Sources hasn't been found in the official documentation but it has been inferred.
+---@class pandoc.Sources: List<pandoc.Source>
+---@field __tostring fun(): string  # (Probably) returns just the concatenated text of all sources.
