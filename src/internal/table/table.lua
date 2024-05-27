@@ -203,7 +203,7 @@ end
 ---@param source string | nil
 ---@return Inline | nil
 local function getCaption(c, source)
-  if #c.short then
+  if c.short ~= nil and #c.short > 0 then
     log.Warning("table has a short caption, it is ignored", source)
   end
   local inlines = pandoc.utils.blocks_to_inlines(c.long, { pandoc.LineBreak() })
