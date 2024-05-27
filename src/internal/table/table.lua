@@ -370,9 +370,9 @@ local function makeRowLatex(y, rows, canPageBreak, colAlignments, config)
   return merge({
     topBorder,
     pandoc.Space(),
-    merge(fun.Intersperse(cells, merge({ pandoc.Space(), element.raw([[&]]), pandoc.Space() }))),
+    merge(fun.Intersperse(cells, merge({ pandoc.Space(), raw([[&]]), pandoc.Space() }))),
     pandoc.Space(),
-    canPageBreak and canRowPageBreak(y, rows) and element.raw([[\\]]) or element.raw([[\\*]]),
+    canPageBreak and canRowPageBreak(y, rows) and raw([[\\]]) or raw([[\\*]]),
     pandoc.Space(),
     bottomBorder,
   })
@@ -388,7 +388,7 @@ local function makeRowsLatex(rows, colAlignments, canPageBreak, config)
   for y = 1, #rows do
     inlines:insert(makeRowLatex(y, rows, canPageBreak, colAlignments, config))
   end
-  return merge(fun.Intersperse(inlines, element.raw("\n")))
+  return merge(fun.Intersperse(inlines, raw("\n")))
 end
 
 ---@param pandocTable Table
