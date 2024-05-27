@@ -16,6 +16,10 @@ function Writer(d, options)
 		end,
 	})
 	d = element.RemoveMerges(d)
+
+	if options.variables["template_debug"] ~= nil and options.variables["template_debug"]:render() == "1" then
+		io.stderr:write(pandoc.write(d, "native", options))
+	end
 	return pandoc.write(d, "latex", options)
 end
 
