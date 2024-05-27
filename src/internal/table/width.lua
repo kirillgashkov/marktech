@@ -7,37 +7,37 @@ local width = {}
 ---@param colSpecs List<ColSpec>
 ---@return List<length | nil>
 function width.MakeColWidths(colSpecs)
-	---@type List<length | nil>
-	local widths = pandoc.List({})
+  ---@type List<length | nil>
+  local widths = pandoc.List({})
 
-	for _, colSpec in ipairs(colSpecs) do
-		local w = colSpec[2]
+  for _, colSpec in ipairs(colSpecs) do
+    local w = colSpec[2]
 
-		if w == "ColWidthDefault" then
-			widths:insert(nil)
-		elseif type(w) == "number" then
-			widths:insert({ ["%"] = w })
-		else
-			assert(false)
-		end
-	end
+    if w == "ColWidthDefault" then
+      widths:insert(nil)
+    elseif type(w) == "number" then
+      widths:insert({ ["%"] = w })
+    else
+      assert(false)
+    end
+  end
 
-	-- local total = 0
-	-- for i = 1, #widths do
-	-- 	total = total + (widths[i] or 0)
-	-- end
-	-- if total > 1 then
-	-- 	log.Warning("the table has a total column width greater than 100%", source)
-	-- end
+  -- local total = 0
+  -- for i = 1, #widths do
+  -- 	total = total + (widths[i] or 0)
+  -- end
+  -- if total > 1 then
+  -- 	log.Warning("the table has a total column width greater than 100%", source)
+  -- end
 
-	return widths
+  return widths
 end
 
 ---@param w length # Width. Nil behaves like CSS's "max-width".
 ---@param b { L: length, R: length } # Border.
 ---@return string
 function width.MakeColWidthLatex(w, b)
-	return length.MakeWidthLatex(length.Subtract(w, length.Add(b.L, b.R)))
+  return length.MakeWidthLatex(length.Subtract(w, length.Add(b.L, b.R)))
 end
 
 return width
