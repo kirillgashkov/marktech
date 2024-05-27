@@ -303,7 +303,7 @@ function Inline:clone() end
 ---Column alignment and width specification for a single table column. This is a pair, i.e., a
 ---plain table, with the following components: 1) cell alignment, 2) table column width, as a
 ---fraction of the page width.
----@alias ColSpec { [1]: Alignment, [2]: number|"ColWidthDefault" }
+---@alias ColSpec { [1]: Alignment, [2]: number | nil }
 
 ---Alignment is a string value indicating the horizontal alignment of a table column. The default
 ---alignment is AlignDefault (often equivalent to centered).

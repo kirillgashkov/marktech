@@ -13,10 +13,10 @@ function width.MakeColWidths(colSpecs)
   for _, colSpec in ipairs(colSpecs) do
     local w = colSpec[2]
 
-    if w == "ColWidthDefault" then
-      widths:insert(nil)
-    elseif type(w) == "number" then
+    if type(w) == "number" then
       widths:insert({ ["%"] = w })
+    elseif w == nil then
+      widths:insert(nil)
     else
       assert(false)
     end
