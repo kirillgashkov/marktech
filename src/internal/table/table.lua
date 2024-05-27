@@ -522,8 +522,8 @@ local function makeTableLatex(t, tableConfig, config)
   local firstTopBorderLatex = border.MakeHorizontalLatex(pandoc.List({ t.FirstTopBorder }), config)
   local lastBottomBorderLatex = border.MakeHorizontalLatex(pandoc.List({ t.LastBottomBorder }), config)
   local headRowsLatex = makeRowsLatex(t.HeadRows, t.ColAlignments, false, config)
-  local bodyRowsLatex = makeRowsLatex(t.HeadRows, t.ColAlignments, true, config)
-  local footRowsLatex = makeRowsLatex(t.HeadRows, t.ColAlignments, false, config)
+  local bodyRowsLatex = makeRowsLatex(t.BodyRows, t.ColAlignments, true, config)
+  local footRowsLatex = makeRowsLatex(t.FootRows, t.ColAlignments, false, config)
 
   return pandoc.Plain({
     merge({
@@ -555,9 +555,9 @@ local function makeTableLatex(t, tableConfig, config)
   })
 end
 
----@param t Table
+---@param pandocTable Table
 ---@return Block
-function table_.MakeLatex(t)
+function table_.MakeLatex(pandocTable)
   local tableConfig = {
     OuterBorderWidth = { pt = 1 },
     InnerBorderWidth = { pt = 0.5 },
@@ -566,11 +566,11 @@ function table_.MakeLatex(t)
     SeparateFoot = false,
     RepeatFoot = false,
   }
-  local table = makeTable(t, tableConfig)
+  local t = makeTable(pandocTable, tableConfig)
   local config = {
     ArrayRuleWidth = { pt = 0.4 },
   }
-  return makeTableLatex(table, tableConfig, config)
+  return makeTableLatex(t, tableConfig, config)
 end
 
 return table_
