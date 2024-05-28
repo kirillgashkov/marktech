@@ -317,7 +317,7 @@ end
 ---@param y integer
 ---@param rows List<List<cell>>
 ---@param config config
----@return { T: Inline, B: Inline }
+---@return { T: Inline | nil, B: Inline | nil }
 local function makeRowBorderLatex(y, rows, config)
   local topWr = pandoc.List({})
   local bottomWr = pandoc.List({})
@@ -368,13 +368,12 @@ local function makeRowLatex(y, rows, canPageBreak, colAlignments, config)
   local bottomBorder = rowBorder.B
 
   return merge({
-    topBorder,
+    topBorder ~= nil and merge({ topBorder, pandoc.Space() }) or merge({}),
     pandoc.Space(),
     merge(fun.Intersperse(cells, merge({ pandoc.Space(), raw([[&]]), pandoc.Space() }))),
     pandoc.Space(),
     canPageBreak and canRowPageBreak(y, rows) and raw([[\\]]) or raw([[\\*]]),
-    pandoc.Space(),
-    bottomBorder,
+    bottomBorder ~= nil and merge({ pandoc.Space(), bottomBorder }) or merge({}),
   })
 end
 
@@ -535,21 +534,21 @@ local function makeTableLatex(t, tableConfig, config)
     }),
     merge({ raw("\n") }),
     firstHeadCaptionRowLatex ~= nil and merge({ firstHeadCaptionRowLatex, raw("\n") }) or merge({}),
-    merge({ firstTopBorderLatex, raw("\n") }),
+    firstTopBorderLatex ~= nil and merge({ firstTopBorderLatex, raw("\n") }) or merge({}),
     headRowsLatex ~= nil and merge({ headRowsLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endfirsthead]]), raw("\n") }),
     merge({ raw("\n") }),
     merge({ otherHeadCaptionRowLatex, raw("\n") }),
-    merge({ firstTopBorderLatex, raw("\n") }),
+    firstTopBorderLatex ~= nil and merge({ firstTopBorderLatex, raw("\n") }) or merge({}),
     (tableConfig.RepeatHead and headRowsLatex ~= nil) and merge({ headRowsLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endhead]]), raw("\n") }),
     merge({ raw("\n") }),
     (tableConfig.RepeatFoot and footRowsLatex ~= nil) and merge({ footRowsLatex, raw("\n") }) or merge({}),
-    merge({ lastBottomBorderLatex, raw("\n") }),
+    lastBottomBorderLatex ~= nil and merge({ lastBottomBorderLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endfoot]]), raw("\n") }),
     merge({ raw("\n") }),
     footRowsLatex ~= nil and merge({ footRowsLatex, raw("\n") }) or merge({}),
-    merge({ lastBottomBorderLatex, raw("\n") }),
+    lastBottomBorderLatex ~= nil and merge({ lastBottomBorderLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endlastfoot]]), raw("\n") }),
     merge({ raw("\n") }),
     bodyRowsLatex ~= nil and merge({ bodyRowsLatex, raw("\n") }) or merge({}),

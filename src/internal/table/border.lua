@@ -53,8 +53,12 @@ end
 ---@param maxIndex integer
 ---@param config config
 ---@param source? string | nil
----@return Inline
+---@return Inline | nil
 local function makeHorizontalLatex(i, w, l, maxIndex, config, source)
+  if length.IsZero(w) then
+    return nil
+  end
+
   local useLine = length.IsEqual(w, config.ArrayRuleWidth)
   local useFull = i == 1 and i + l - 1 == maxIndex
 
@@ -83,10 +87,10 @@ end
 
 ---@param wr List<length> # Border width row.
 ---@param config config
----@return Inline
+---@return Inline | nil
 function border.MakeHorizontalLatex(wr, config)
   if #wr == 0 then
-    return merge({})
+    return nil
   end
 
   local inlines = pandoc.List({})
@@ -100,7 +104,10 @@ function border.MakeHorizontalLatex(wr, config)
       if length.IsEqual(w, currentWidth) then
         currentLength = currentLength + 1
       else
-        inlines:insert(makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config))
+        local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config)
+        if inline ~= nil then
+          inlines:insert(inline)
+        end
         currentStart = i
         currentWidth = w
         currentLength = 1
@@ -108,9 +115,12 @@ function border.MakeHorizontalLatex(wr, config)
     end
   end
 
-  inlines:insert(makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config))
+  local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config)
+  if inline ~= nil then
+    inlines:insert(inline)
+  end
 
-  return merge(inlines)
+  return #inlines > 0 and merge(inlines) or nil
 end
 
 ---@param w length
