@@ -382,13 +382,13 @@ end
 ---@param colAlignments List<"left" | "center" | "right">
 ---@param canPageBreak boolean
 ---@param config config
----@return Inline
+---@return Inline | nil
 local function makeRowsLatex(rows, colAlignments, canPageBreak, config)
   local inlines = pandoc.Inlines({})
   for y = 1, #rows do
     inlines:insert(makeRowLatex(y, rows, canPageBreak, colAlignments, config))
   end
-  return merge(fun.Intersperse(inlines, raw("\n")))
+  return #rows > 0 and merge(fun.Intersperse(inlines, raw("\n"))) or nil
 end
 
 ---@param pandocTable Table
@@ -536,20 +536,23 @@ local function makeTableLatex(t, tableConfig, config)
     merge({ raw("\n") }),
     firstHeadCaptionRowLatex ~= nil and merge({ firstHeadCaptionRowLatex, raw("\n") }) or merge({}),
     merge({ firstTopBorderLatex, raw("\n") }),
-    merge({ headRowsLatex, raw("\n") }),
+    headRowsLatex ~= nil and merge({ headRowsLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endfirsthead]]), raw("\n") }),
+    merge({ raw("\n") }),
     merge({ otherHeadCaptionRowLatex, raw("\n") }),
     merge({ firstTopBorderLatex, raw("\n") }),
-    tableConfig.RepeatHead and merge({ headRowsLatex, raw("\n") }) or merge({}),
+    (tableConfig.RepeatHead and headRowsLatex ~= nil) and merge({ headRowsLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endhead]]), raw("\n") }),
-    tableConfig.RepeatFoot and merge({ footRowsLatex, raw("\n") }) or merge({}),
+    merge({ raw("\n") }),
+    (tableConfig.RepeatFoot and footRowsLatex ~= nil) and merge({ footRowsLatex, raw("\n") }) or merge({}),
     merge({ lastBottomBorderLatex, raw("\n") }),
     merge({ raw([[\endfoot]]), raw("\n") }),
-    merge({ footRowsLatex, raw("\n") }),
+    merge({ raw("\n") }),
+    footRowsLatex ~= nil and merge({ footRowsLatex, raw("\n") }) or merge({}),
     merge({ lastBottomBorderLatex, raw("\n") }),
     merge({ raw([[\endlastfoot]]), raw("\n") }),
     merge({ raw("\n") }),
-    merge({ bodyRowsLatex, raw("\n") }),
+    bodyRowsLatex ~= nil and merge({ bodyRowsLatex, raw("\n") }) or merge({}),
     merge({ raw("\n") }),
     merge({ raw([[\end{longtable}]]) }),
   })
