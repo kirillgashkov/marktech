@@ -14,9 +14,9 @@ function fun.Reduce(f, iterable, initial)
 end
 
 ---@generic T
----@param iterable any[][]
+---@param iterable T[][]
 ---@param factory? function | nil
----@return any[]
+---@return T[]
 function fun.Flatten(iterable, factory)
   factory = factory ~= nil and factory or function()
     return {}
@@ -25,6 +25,24 @@ function fun.Flatten(iterable, factory)
   return fun.Reduce(function(flattened, a)
     for _, v in ipairs(a) do
       table.insert(flattened, v)
+    end
+    return flattened
+  end, iterable, factory())
+end
+
+---@generic K
+---@generic V
+---@param iterable table<K, V>[]
+---@param factory? function | nil
+---@return table<K, V>
+function fun.Merge(iterable, factory)
+  factory = factory ~= nil and factory or function()
+    return {}
+  end
+
+  return fun.Reduce(function(flattened, a)
+    for k, v in pairs(a) do
+      flattened[k] = v
     end
     return flattened
   end, iterable, factory())

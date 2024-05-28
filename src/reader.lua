@@ -1,5 +1,6 @@
 local log = require("internal.log")
 local element = require("internal.element")
+local utility = require("internal.utility.utility")
 
 ---@param input string | pandoc.Sources
 ---@param options pandoc.ReaderOptions
@@ -64,6 +65,7 @@ function Reader(sources, options)
       return t
     end,
   })
+  d = element.SetWidths(d)
 
   return d
 end

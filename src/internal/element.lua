@@ -1,3 +1,6 @@
+local utility = require("internal.utility.utility")
+local log = require("internal.log")
+
 local element = {}
 
 local mdFormat = "gfm-yaml_metadata_block"
@@ -12,6 +15,24 @@ end
 ---@return nil
 local function removeSource(e)
   e.attr.attributes["data-pos"] = nil
+end
+
+---@param e { attr: Attr }
+---@return nil
+local function setWidth(e)
+  local w = nil
+  for _, c in ipairs(e.attr.classes) do
+    local parsedWidth = utility.ParseWidth(c, element.GetSource(e))
+    if parsedWidth ~= nil then
+      w = parsedWidth
+    end
+  end
+  if w ~= nil then
+    if e.attr.attributes["width"] ~= nil and e.attr.attributes["width"] ~= "" then
+      log.Warning("element already has a width, the utility class will take precedence", element.GetSource(e))
+    end
+    e.attr.attributes["width"] = w
+  end
 end
 
 ---@param e Div | Span
@@ -112,9 +133,33 @@ function element.RemoveSources(document)
 
     ---@param i Inline
     ---@return Inline
-    Span = function(i)
+    Inline = function(i)
       if i["attr"] ~= nil then
         removeSource(i)
+      end
+      return i
+    end,
+  })
+end
+
+---@param document Pandoc
+---@return Pandoc
+function element.SetWidths(document)
+  return document:walk({
+    ---@param b Block
+    ---@return Block
+    Block = function(b)
+      if b["attr"] ~= nil then
+        setWidth(b)
+      end
+      return b
+    end,
+
+    ---@param i Inline
+    ---@return Inline
+    Inline = function(i)
+      if i["attr"] ~= nil then
+        setWidth(i)
       end
       return i
     end,
