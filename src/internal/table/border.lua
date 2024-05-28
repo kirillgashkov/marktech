@@ -60,7 +60,7 @@ local function makeHorizontalLatex(i, w, l, maxIndex, config, source)
 
   if useLine then
     if useFull then
-      return raw([[\hline"]])
+      return raw([[\hline]])
     else
       return raw([[\cline{]] .. i .. [[-]] .. i + l - 1 .. [[}]])
     end
