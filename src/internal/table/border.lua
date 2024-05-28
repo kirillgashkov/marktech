@@ -15,7 +15,7 @@ local border = {}
 function border.MakeRowBorders(rowCount, topWidth, divideWidth, bottomWidth)
   local borders = pandoc.List({})
   for i = 1, rowCount do
-    local b = { T = divideWidth, B = divideWidth }
+    local b = { T = length.Zero(), B = divideWidth }
     if i == 1 then
       b.T = topWidth
     end
@@ -35,7 +35,7 @@ end
 function border.MakeColBorders(colCount, leftWidth, divideWidth, rightWidth)
   local borders = pandoc.List({})
   for i = 1, colCount do
-    local b = { L = divideWidth, R = divideWidth }
+    local b = { L = length.Zero(), R = divideWidth }
     if i == 1 then
       b.L = leftWidth
     end
