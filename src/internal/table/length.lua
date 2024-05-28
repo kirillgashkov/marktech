@@ -7,6 +7,12 @@ local raw = element.Raw
 
 local length = {}
 
+---@param v number
+---@return Inline
+local function makeNumberLatex(v)
+  return raw(tostring(string.format("%.4f", v):gsub("%.?0+$", "")))
+end
+
 ---@param a length
 ---@param b length
 ---@return length
@@ -76,11 +82,11 @@ function length.MakeWidthLatex(l)
   for u, v in pairs(l) do
     local component
     if u == "pt" then
-      component = merge({ raw(string.format("%.4f", math.abs(v))), raw("pt") })
+      component = merge({ makeNumberLatex(math.abs(v)), raw("pt") })
     elseif u == "%" then
       component = merge({
         raw([[(]]),
-        merge({ raw([[\real]]), raw([[{]]), raw(string.format("%.4f", math.abs(v))), raw([[}]]) }),
+        merge({ raw([[\real]]), raw([[{]]), makeNumberLatex(math.abs(v)), raw([[}]]) }),
         raw([[*]]),
         raw([[\textwidth]]),
         raw([[)]]),
@@ -122,7 +128,7 @@ function length.MakeLatex(l)
   for u, v in pairs(l) do
     local component
     if u == "pt" then
-      component = merge({ raw(string.format("%.4f", math.abs(v))), raw("pt") })
+      component = merge({ makeNumberLatex(math.abs(v)), raw("pt") })
     else
       log.Error("unsupported width unit: " .. u)
       assert(false)
