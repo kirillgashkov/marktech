@@ -8,10 +8,34 @@ function element.GetSource(e)
   return e.attr.attributes["data-pos"]
 end
 
----@param attr Attr
+---@param e { attr: Attr }
+---@return nil
+local function removeSource(e)
+  e.attr.attributes["data-pos"] = nil
+end
+
+---@param e Div | Span
 ---@return boolean
-function element.IsMerge(attr)
-  return attr.attributes["data-template--is-merge"] == "1"
+local function isMerge(e)
+  return e.attr.attributes["data-template--is-merge"] == "1"
+end
+
+---@param e Div | Span
+---@return boolean
+local function isRedundant(e)
+  if e.attr.identifier ~= "" then
+    return false
+  end
+  if #e.attr.classes > 0 then
+    return false
+  end
+  for _ in pairs(e.attr.attributes) do
+    return false
+  end
+  if #e.content > 1 then
+    return false
+  end
+  return true
 end
 
 ---@param inlines Inlines
@@ -48,26 +72,75 @@ function element.MdBlock(s)
   return element.MergeBlock(pandoc.read(s, mdFormat).blocks)
 end
 
----@param d Pandoc
+---@param document Pandoc
 ---@return Pandoc
-function element.RemoveMerges(d)
-  return d:walk({
-    ---@param div Div
+function element.RemoveMerges(document)
+  return document:walk({
+    ---@param d Div
     ---@return Div | Blocks
-    Div = function(div)
-      if element.IsMerge(div.attr) then
-        return div.content
+    Div = function(d)
+      if isMerge(d) then
+        return d.content
       end
-      return div
+      return d
     end,
 
-    ---@param span Span
+    ---@param s Span
     ---@return Span | Inlines
-    Span = function(span)
-      if element.IsMerge(span.attr) then
-        return span.content
+    Span = function(s)
+      if isMerge(s) then
+        return s.content
       end
-      return span
+      return s
+    end,
+  })
+end
+
+---Creates redundant Divs and Spans.
+---@param document Pandoc
+---@return Pandoc
+function element.RemoveSources(document)
+  return document:walk({
+    ---@param b Block
+    ---@return Block
+    Block = function(b)
+      if b["attr"] ~= nil then
+        removeSource(b)
+      end
+      return b
+    end,
+
+    ---@param i Inline
+    ---@return Inline
+    Span = function(i)
+      if i["attr"] ~= nil then
+        removeSource(i)
+      end
+      return i
+    end,
+  })
+end
+
+---@param document Pandoc
+---@return Pandoc
+function element.RemoveRedundants(document)
+  return document:walk({
+    ---@param d Div
+    ---@return Div | Blocks
+    Div = function(d)
+      if isRedundant(d) then
+        return d.content
+      end
+      return d
+    end,
+
+    ---@param s Span
+    ---@return Span | Inlines
+    Span = function(s)
+      if isRedundant(s) then
+        return s.content
+      end
+      return s
     end,
   })
 end
