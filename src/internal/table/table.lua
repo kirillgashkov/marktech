@@ -563,9 +563,9 @@ function table_.MakeLatex(pandocTable)
   local tableConfig = {
     OuterBorderWidth = { pt = 1 },
     InnerBorderWidth = { pt = 0.5 },
-    SeparateHead = false,
-    RepeatHead = false,
-    SeparateFoot = false,
+    SeparateHead = true,
+    RepeatHead = true,
+    SeparateFoot = true,
     RepeatFoot = false,
   }
   local t = makeTable(pandocTable, tableConfig)
