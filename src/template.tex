@@ -198,24 +198,38 @@ $endif$
 \usepackage{longtable}
 
 
-% % Provides \specialrule command. See
-% % https://tex.stackexchange.com/questions/88929/vertical-table-lines-are-discontinuous-with-booktabs.
-% \usepackage{booktabs}
-% \aboverulesep=0pt
-% \belowrulesep=0pt
-% \renewcommand{\arraystretch}{1.35}
+% Variable width \hline and \cline. See https://tex.stackexchange.com/a/24552.
+% booktabs was also considered, their \specialrule worked great but \cmidrule
+% not so much, it had problems with vertical lines.
 
-% https://tex.stackexchange.com/a/24552 - \cline
+\makeatletter
+\newlength{\template@table@internal@arrayrulewidth}
+\newcommand{\template@table@arrayrulewidth@set}[1]{%
+  \noalign{\global\setlength{\arrayrulewidth}{#1}}%
+}
+\newcommand{\template@table@arrayrulewidth@save}{%
+  \noalign{\global\setlength{\template@table@internal@arrayrulewidth}{\arrayrulewidth}}%
+}
+\newcommand{\template@table@arrayrulewidth@restore}{%
+  \noalign{\global\setlength{\arrayrulewidth}{\template@table@internal@arrayrulewidth}}%
+}
+\makeatother
 
-\usepackage{booktabs}
+\makeatletter
+\newcommand{\varhline}[1]{
+  \template@table@arrayrulewidth@save%
+  \template@table@arrayrulewidth@set{#1}%
+  \hline%
+  \template@table@arrayrulewidth@restore%
+}
+\newcommand{\varcline}[2]{%
+  \template@table@arrayrulewidth@save%
+  \template@table@arrayrulewidth@set{#1}%
+  \cline{#2}%
+  \template@table@arrayrulewidth@restore%
+}
+\makeatother
 
-
-
-\newlength{\Oldarrayrulewidth}
-\newcommand{\Cline}[2]{%
-  \noalign{\global\setlength{\Oldarrayrulewidth}{\arrayrulewidth}}%
-  \noalign{\global\setlength{\arrayrulewidth}{#1}}\cline{#2}%
-  \noalign{\global\setlength{\arrayrulewidth}{\Oldarrayrulewidth}}}
 
 % Provides "!" column type (and possibly some other column types).
 \usepackage{array}

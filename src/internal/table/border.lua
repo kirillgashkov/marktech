@@ -52,9 +52,8 @@ end
 ---@param l integer # Border length.
 ---@param maxIndex integer
 ---@param config config
----@param source? string | nil
 ---@return Inline | nil
-local function makeHorizontalLatex(i, w, l, maxIndex, config, source)
+local function makeHorizontalLatex(i, w, l, maxIndex, config)
   if length.IsZero(w) then
     return nil
   end
@@ -71,42 +70,14 @@ local function makeHorizontalLatex(i, w, l, maxIndex, config, source)
   else
     if useFull then
       return merge({
-        raw([[\specialrule]]),
+        raw([[\varhline]]),
         raw([[{]]),
         length.MakeLatex(w),
         raw([[}]]),
-        raw([[{0pt}]]),
-        raw([[{0pt}]]),
       })
-      -- return merge({
-      --   raw([[\noalign]]),
-      --   raw([[{]]),
-      --   raw([[\hrule]]),
-      --   pandoc.Space(),
-      --   raw([[height]]),
-      --   pandoc.Space(),
-      --   length.MakeLatex(w),
-      --   pandoc.Space(),
-      --   raw([[}]]),
-      -- })
     else
-      -- return merge({
-      --   raw([[\cmidrule]]),
-      --   merge({
-      --     raw("["),
-      --     length.MakeLatex(w),
-      --     raw("]"),
-      --   }),
-      --   merge({
-      --     raw([[{]]),
-      --     raw(tostring(i)),
-      --     raw([[-]]),
-      --     raw(tostring(i + l - 1)),
-      --     raw([[}]]),
-      --   }),
-      -- })
       return merge({
-        raw([[\Cline]]),
+        raw([[\varcline]]),
         merge({
           raw("{"),
           length.MakeLatex(w),
@@ -144,7 +115,7 @@ function border.MakeHorizontalLatex(wr, config, source)
       if length.IsEqual(w, currentWidth) then
         currentLength = currentLength + 1
       else
-        local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config, source)
+        local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config)
         if inline ~= nil then
           inlines:insert(inline)
         end
@@ -155,7 +126,7 @@ function border.MakeHorizontalLatex(wr, config, source)
     end
   end
 
-  local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config, source)
+  local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config)
   if inline ~= nil then
     inlines:insert(inline)
   end
