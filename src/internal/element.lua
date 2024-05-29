@@ -1,6 +1,3 @@
-local utility = require("internal.utility.utility")
-local log = require("internal.log")
-
 local element = {}
 
 local mdFormat = "gfm-yaml_metadata_block"
@@ -15,24 +12,6 @@ end
 ---@return nil
 local function removeSource(e)
   e.attr.attributes["data-pos"] = nil
-end
-
----@param e { attr: pandoc.Attr }
----@return nil
-local function setWidth(e)
-  local w = nil
-  for _, c in ipairs(e.attr.classes) do
-    local parsedWidth = utility.ParseWidth(c, element.GetSource(e))
-    if parsedWidth ~= nil then
-      w = parsedWidth
-    end
-  end
-  if w ~= nil then
-    if e.attr.attributes["width"] ~= nil and e.attr.attributes["width"] ~= "" then
-      log.Warning("element already has a width, the utility class will take precedence", element.GetSource(e))
-    end
-    e.attr.attributes["width"] = w
-  end
 end
 
 ---@param e pandoc.Div | pandoc.Span
@@ -138,58 +117,6 @@ function element.RemoveSources(document)
         removeSource(i)
       end
       return i
-    end,
-  })
-end
-
----@param document pandoc.Pandoc
----@return pandoc.Pandoc
-function element.SetWidths(document)
-  return document:walk({
-    ---@param b pandoc.Block
-    ---@return pandoc.Block
-    Block = function(b)
-      if b["attr"] ~= nil then
-        setWidth(b)
-      end
-      return b
-    end,
-
-    ---@param i pandoc.Inline
-    ---@return pandoc.Inline
-    Inline = function(i)
-      if i["attr"] ~= nil then
-        setWidth(i)
-      end
-      return i
-    end,
-
-    ---Sets widths for element components because they aren't covered by Block
-    ---and Inline walkthroughs.
-    ---@param t pandoc.Table
-    ---@return pandoc.Table
-    Table = function(t)
-      ---@param rows pandoc.List<pandoc.Row>
-      local setWidthsRows = function(rows)
-        for _, r in ipairs(rows) do
-          setWidth(r)
-          for _, c in ipairs(r.cells) do
-            setWidth(c)
-          end
-        end
-      end
-
-      setWidth(t.head)
-      setWidthsRows(t.head.rows)
-      for _, b in ipairs(t.bodies) do
-        setWidth(b)
-        setWidthsRows(b.head)
-        setWidthsRows(b.body)
-      end
-      setWidth(t.foot)
-      setWidthsRows(t.foot.rows)
-
-      return t
     end,
   })
 end

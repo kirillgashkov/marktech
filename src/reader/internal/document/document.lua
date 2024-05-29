@@ -1,11 +1,19 @@
+local element = require("internal.element")
 local fun = require("internal.fun")
 local log = require("internal.log")
 
-local utility = {}
+local document = {}
 
 --
 -- Config
 --
+
+---@class reader.internal.document.Config
+---@field theme reader.internal.document.ConfigTheme
+
+---@class reader.internal.document.ConfigTheme
+---@field spacing { [string]: string }
+---@field width { [string]: string }
 
 -- https://github.com/tailwindlabs/tailwindcss/blob/master/stubs/config.full.js
 local configIn = {
@@ -120,15 +128,8 @@ local function makeConfig(cIn)
   return cOut
 end
 
----@class utility.Config
----@field theme utility.ConfigTheme
-
----@class utility.ConfigTheme
----@field spacing { [string]: string }
----@field width { [string]: string }
-
----@type utility.Config
-utility.Config = makeConfig(configIn)
+---@type reader.internal.document.Config
+document.Config = makeConfig(configIn)
 
 --
 -- Common
@@ -145,10 +146,10 @@ local widthRegex = re.compile([["w-"{.*}]])
 
 ---@param class string
 ---@param source string | nil
----@param config? utility.Config | nil # Defaults to utility.Config.
+---@param config? reader.internal.document.Config | nil # Defaults to document.Config.
 ---@return string | nil
-function utility.ParseWidth(class, source, config)
-  config = config or utility.Config
+local function parseWidth(class, source, config)
+  config = config or document.Config
 
   local w = widthRegex:match(class)
   if w == nil then
@@ -168,4 +169,74 @@ function utility.ParseWidth(class, source, config)
   return value
 end
 
-return utility
+---@param e { attr: pandoc.Attr }
+---@return nil
+local function setWidth(e)
+  local w = nil
+  for _, c in ipairs(e.attr.classes) do
+    local parsedWidth = parseWidth(c, element.GetSource(e))
+    if parsedWidth ~= nil then
+      w = parsedWidth
+    end
+  end
+  if w ~= nil then
+    if e.attr.attributes["width"] ~= nil and e.attr.attributes["width"] ~= "" then
+      log.Warning("element already has a width, the utility class will take precedence", element.GetSource(e))
+    end
+    e.attr.attributes["width"] = w
+  end
+end
+
+---@param d pandoc.Pandoc
+---@return pandoc.Pandoc
+function document.SetWidths(d)
+  return d:walk({
+    ---@param b pandoc.Block
+    ---@return pandoc.Block
+    Block = function(b)
+      if b["attr"] ~= nil then
+        setWidth(b)
+      end
+      return b
+    end,
+
+    ---@param i pandoc.Inline
+    ---@return pandoc.Inline
+    Inline = function(i)
+      if i["attr"] ~= nil then
+        setWidth(i)
+      end
+      return i
+    end,
+
+    ---Table filter exists because Block and Inline filters don't cover Table
+    ---fully.
+    ---@param t pandoc.Table
+    ---@return pandoc.Table
+    Table = function(t)
+      ---@param rows pandoc.List<pandoc.Row>
+      local setWidthsRows = function(rows)
+        for _, r in ipairs(rows) do
+          setWidth(r)
+          for _, c in ipairs(r.cells) do
+            setWidth(c)
+          end
+        end
+      end
+
+      setWidth(t.head)
+      setWidthsRows(t.head.rows)
+      for _, b in ipairs(t.bodies) do
+        setWidth(b)
+        setWidthsRows(b.head)
+        setWidthsRows(b.body)
+      end
+      setWidth(t.foot)
+      setWidthsRows(t.foot.rows)
+
+      return t
+    end,
+  })
+end
+
+return document
