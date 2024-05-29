@@ -142,14 +142,12 @@ local function make_code_block(
   return code_block_el
 end
 
--- New.
-
-local include = {}
+local codeblock = {}
 
 ---@param e pandoc.CodeBlock
 ---@return any
-function include.HandleInclude(e)
+function codeblock.Include(e)
   return make_code_block(e)
 end
 
-return include
+return codeblock

@@ -1,12 +1,10 @@
--- New.
-
-local trim = {}
+local codeblock = {}
 
 ---@param e pandoc.CodeBlock
 ---@return pandoc.CodeBlock
-function trim.Trim(e)
+function codeblock.Trim(e)
   e.text = e.text:gsub("^\n+", ""):gsub("\n+$", "")
   return e
 end
 
-return trim
+return codeblock
