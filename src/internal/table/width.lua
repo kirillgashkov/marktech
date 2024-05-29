@@ -1,6 +1,10 @@
 local length = require("internal.table.length")
 local log = require("internal.log")
 
+local element = require("internal.element")
+local merge = element.Merge
+local raw = element.Raw
+
 local width = {}
 
 -- I'm not sure if Pandoc allows mixing default and non-default column widths but we do. One of our filters surely
@@ -45,7 +49,20 @@ end
 ---@param b { L: length, R: length } # Border.
 ---@return Inline
 function width.MakeLatex(w, b)
-  return length.MakeWidthLatex(length.Subtract(w, length.Add(b.L, b.R)))
+  return merge({
+    raw([[\dimexpr]]),
+    raw([[(]]),
+    merge({
+      length.MakeWidthLatex(length.Subtract(w, length.Add(b.L, b.R))),
+      pandoc.Space(),
+      raw([[-]]),
+      pandoc.Space(),
+      raw([[2]]),
+      raw([[\tabcolsep]]),
+    }),
+    raw([[)]]),
+    raw([[\relax]]),
+  })
 end
 
 return width
