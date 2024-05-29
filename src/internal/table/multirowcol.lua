@@ -34,7 +34,9 @@ function multirowcol.MakeMultirowLatex(content, forCell)
     }),
     merge({
       raw([[{]]),
-      width.MakeLatex(forCell.Width, forCell.Border),
+      -- TODO: Consider using = instead.
+      forCell.Width ~= "max-content" and width.MakeLatex(forCell.Width --[[@as length]], forCell.Border)
+        or raw([[*]]),
       raw([[}]]),
     }),
     merge({
@@ -51,7 +53,7 @@ end
 ---@return Inline
 function multirowcol.MakeMulticolLatex(content, forCell, config)
   return merge({
-    raw([[\multicol]]),
+    raw([[\multicolumn]]),
     merge({
       raw([[{]]),
       raw(tostring(forCell.ColSpan)),
