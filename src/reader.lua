@@ -84,7 +84,7 @@ function Reader(sources, options)
         t.colspecs[i][2] = 0.8 / #t.colspecs
       end
 
-      ---@type List<List<number | nil>>
+      ---@type List<List<number | "max-content">>
       local colToWidthsFromHead = pandoc.List({})
       for _ = 1, #t.colspecs do
         colToWidthsFromHead:insert(pandoc.List({}))
@@ -126,9 +126,13 @@ function Reader(sources, options)
           end
           local colWidthString = s.attr.attributes["width"]
 
+          -- It would be better to use number | nil here but when subColWidth is
+          -- nil, colToWidthsFromHead[i]:insert(subColWidth) from below won't
+          -- insert anything.
+          ---@type number | "max-content"
           local subColWidth
           if colWidthString == "max-content" then
-            subColWidth = nil
+            subColWidth = "max-content"
           else
             local parsedColWidth = length.Parse(colWidthString)
             if parsedColWidth ~= nil then
@@ -160,9 +164,22 @@ function Reader(sources, options)
           goto continue
         end
         if #widths > 1 then
-          log.Warning("table column has multiple widths specified in the head, only the first one is used", element.GetSource(t))
+          log.Warning(
+            "table column has multiple widths specified in the head, only the first one is used",
+            element.GetSource(t)
+          )
         end
-        t.colspecs[i][2] = widths[1]
+
+        local w = widths[1]
+        if type(w) == "number" then
+          ---@cast w number
+          t.colspecs[i][2] = w
+        elseif w == "max-content" then
+          t.colspecs[i][2] = nil
+        else
+          assert(false)
+        end
+
         ::continue::
       end
 
