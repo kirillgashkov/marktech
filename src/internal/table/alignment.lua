@@ -48,7 +48,7 @@ end
 
 ---@param a "left" | "center" | "right"
 ---@return Inline
-local function makeMaxWidthLatex(a)
+local function makeMaxContentWidthLatex(a)
   local c
   if a == "left" then
     c = "l"
@@ -97,7 +97,7 @@ local function makeLengthWidthLatex(a, w, b)
 end
 
 ---@param a "left" | "center" | "right" # Alignment.
----@param w length | nil # Width. Nil behaves like CSS's "max-width".
+---@param w length | "max-content" # Width.
 ---@param b { L: length, R: length } # Border.
 ---@return Inline
 function alignment.MakeLatex(a, w, b)
@@ -105,8 +105,8 @@ function alignment.MakeLatex(a, w, b)
 
   if type(w) == "table" then
     s = makeLengthWidthLatex(a, w, b)
-  elseif w == nil then
-    s = makeMaxWidthLatex(a)
+  elseif w == "max-content" then
+    s = makeMaxContentWidthLatex(a)
   else
     assert(false)
   end

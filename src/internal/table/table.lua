@@ -10,9 +10,7 @@ local element = require("internal.element")
 local length = require("internal.table.length")
 
 local merge = element.Merge
-local mergeBlock = element.MergeBlock
 local raw = element.Raw
-local md = element.Md
 
 local table_ = {}
 
@@ -107,7 +105,7 @@ local function setAlignments(rows, colAlignments, pandocRows)
 end
 
 ---@param rows List<List<contentCellWithContentAlignment | mergeCell>>
----@param colWidths List<length | nil>
+---@param colWidths List<length | "max-content">
 ---@param colBorders List<{ L: length, R: length }>
 ---@param source string|nil
 ---@return List<List<contentCellWithContentAlignmentWidth | mergeCell>>
@@ -118,7 +116,7 @@ local function setWidths(rows, colWidths, colBorders, source)
     for x = 1, #rows[y] do
       if rows[y][x].Type == "contentCell" then
         local w = length.Zero()
-        local anyMaxWidth = false
+        local anyMaxContentWidth = false
         local anyFixedWidth = false
 
         for i = 1, rows[y][x].ColSpan do
@@ -126,8 +124,8 @@ local function setWidths(rows, colWidths, colBorders, source)
           w = length.Add(w, length.Add(colBorder.L, colBorder.R))
 
           local colWidth = colWidths[x + i - 1]
-          if colWidth == nil then
-            anyMaxWidth = true
+          if colWidth == "max-content" then
+            anyMaxContentWidth = true
           elseif type(colWidth) == "table" then
             w = length.Add(w, colWidth)
             anyFixedWidth = true
@@ -136,11 +134,11 @@ local function setWidths(rows, colWidths, colBorders, source)
           end
         end
 
-        if anyMaxWidth and anyFixedWidth then
-          log.Error("the table has cell merging with a mix of fixed and max-width columns", source)
+        if anyMaxContentWidth and anyFixedWidth then
+          log.Error("table has cell merging with a mix of fixed length and max-content columns", source)
           assert(false)
-        elseif anyMaxWidth then
-          rows[y][x].Width = nil
+        elseif anyMaxContentWidth then
+          rows[y][x].Width = "max-content"
         elseif anyFixedWidth then
           rows[y][x].Width = width
         else
@@ -183,7 +181,7 @@ end
 
 ---@param pandocRows List<Row>
 ---@param colAlignments List<"left" | "center" | "right">
----@param colWidths List<length | nil>
+---@param colWidths List<length | "max-content">
 ---@param rowBorders List<{ T: length, B: length }>
 ---@param colBorders List<{ L: length, R: length }>
 ---@param source string|nil
@@ -404,7 +402,7 @@ local function makeTable(pandocTable, tableConfig)
   local footPandocRows = pandocTable.foot.rows
 
   local colAlignments = alignment.MakeColAlignments(pandocTable.colspecs)
-  local colWidths = width.MakeColWidths(pandocTable.colspecs)
+  local colWidths = width.MakeColWidths(pandocTable.colspecs, element.GetSource(pandocTable))
   local colBorders = border.MakeColBorders(
     #pandocTable.colspecs,
     tableConfig.OuterBorderWidth,

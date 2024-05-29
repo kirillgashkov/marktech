@@ -1,34 +1,42 @@
 local length = require("internal.table.length")
+local log = require("internal.log")
 
 local width = {}
 
 -- I'm not sure if Pandoc allows mixing default and non-default column widths but we do. One of our filters surely
 -- generates such tables. Also these widths account for borders, similar to CSS's "box-sizing: border-box".
 ---@param colSpecs List<ColSpec>
----@return List<length | nil>
-function width.MakeColWidths(colSpecs)
-  ---@type List<length | nil>
+---@param source string | nil
+---@return List<length | "max-content">
+function width.MakeColWidths(colSpecs, source)
+  ---@type List<length | "max-content">
   local widths = pandoc.List({})
 
   for _, colSpec in ipairs(colSpecs) do
     local w = colSpec[2]
 
     if type(w) == "number" then
-      widths:insert({ ["%"] = w })
+      widths:insert({ ["%"] = w * 100 })
     elseif w == nil then
-      widths:insert(nil)
+      widths:insert("max-content")
     else
       assert(false)
     end
   end
 
-  -- local total = 0
-  -- for i = 1, #widths do
-  -- 	total = total + (widths[i] or 0)
-  -- end
-  -- if total > 1 then
-  -- 	log.Warning("the table has a total column width greater than 100%", source)
-  -- end
+  local total = 0
+  for i = 1, #widths do
+    local w = widths[i]
+    if type(w) == "table" then
+      total = total + (w["%"] or 0)
+    elseif w == "max-content" then
+    else
+      assert(false)
+    end
+  end
+  if total > 100 then
+    log.Warning("table has a total column width of " .. total .. "% which is greater than 100%", source)
+  end
 
   return widths
 end

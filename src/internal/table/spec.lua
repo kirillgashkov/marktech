@@ -7,7 +7,7 @@ local merge = element.Merge
 local spec = {}
 
 ---@param a "left" | "center" | "right" # Alignment.
----@param w length | nil # Width. Nil behaves like CSS's "max-width".
+---@param w length | "max-content" # Width.
 ---@param b { L: length, R: length } # Border.
 ---@param config config
 ---@return Inline
@@ -20,7 +20,7 @@ function spec.MakeLatex(a, w, b, config)
 end
 
 ---@param colAlignments List<"left" | "center" | "right">
----@param colWidths List<length | nil>
+---@param colWidths List<length | "max-content">
 ---@param colBorders List<{ L: length, R: length }>
 ---@param config config
 ---@return Inline

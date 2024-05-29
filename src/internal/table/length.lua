@@ -107,7 +107,7 @@ function length.MakeWidthLatex(l)
     if u == "pt" then
       component = merge({ makeNumberLatex(math.abs(v)), raw("pt") })
     elseif u == "%" then
-      component = merge({ makeNumberLatex(math.abs(v)), raw([[\textwidth]]) })
+      component = merge({ makeNumberLatex(math.abs(v / 100)), raw([[\textwidth]]) })
     else
       log.Error("unsupported width unit: " .. u)
       assert(false)

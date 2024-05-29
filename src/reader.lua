@@ -1,6 +1,5 @@
 local log = require("internal.log")
 local element = require("internal.element")
-local utility = require("internal.utility.utility")
 local length = require("internal.table.length")
 
 ---@param input string | pandoc.Sources

@@ -12,7 +12,7 @@
 ---@field Alignment "left" | "center" | "right"
 
 ---@class contentCellWithContentAlignmentWidth: contentCellWithContentAlignment
----@field Width length | nil
+---@field Width length | "max-content"
 
 ---@class contentCellWithContentAlignmentWidthBorder: contentCellWithContentAlignmentWidth
 ---@field Border { T: length, B: length, L: length, R: length }
@@ -31,7 +31,7 @@
 ---@field Id string
 ---@field Caption Inline | nil
 ---@field ColAlignments List<"left" | "center" | "right">
----@field ColWidths List<length | nil>
+---@field ColWidths List<length | "max-content">
 ---@field ColBorders List<{ L: length, R: length }>
 ---@field FirstTopBorder length
 ---@field LastBottomBorder length
@@ -49,5 +49,5 @@
 
 ---@class colSpec
 ---@field Alignment "left" | "center" | "right"
----@field Width length | nil
+---@field Width length | "max-content"
 ---@field Border { L: length, R: length }
