@@ -10,7 +10,7 @@ local border = {}
 ---@param topWidth length
 ---@param divideWidth length
 ---@param bottomWidth length
----@return List<{ T: length, B: length }>
+---@return pandoc.List<{ T: length, B: length }>
 function border.MakeRowBorders(rowCount, topWidth, divideWidth, bottomWidth)
   local borders = pandoc.List({})
   for i = 1, rowCount do
@@ -30,7 +30,7 @@ end
 ---@param leftWidth length
 ---@param divideWidth length
 ---@param rightWidth length
----@return List<{ L: length, R: length }>
+---@return pandoc.List<{ L: length, R: length }>
 function border.MakeColBorders(colCount, leftWidth, divideWidth, rightWidth)
   local borders = pandoc.List({})
   for i = 1, colCount do
@@ -50,7 +50,7 @@ end
 ---@param w length # Border width.
 ---@param l integer # Border length.
 ---@param maxIndex integer
----@return Inline | nil
+---@return pandoc.Inline | nil
 local function makeHorizontalLatex(i, w, l, maxIndex)
   if length.IsZero(w) then
     return nil
@@ -68,8 +68,8 @@ local function makeHorizontalLatex(i, w, l, maxIndex)
   end
 end
 
----@param wr List<length> # Border width row.
----@return Inline | nil
+---@param wr pandoc.List<length> # Border width row.
+---@return pandoc.Inline | nil
 function border.MakeHorizontalLatex(wr)
   if #wr == 0 then
     return nil
@@ -106,7 +106,7 @@ function border.MakeHorizontalLatex(wr)
 end
 
 ---@param w length
----@return Inline
+---@return pandoc.Inline
 function border.MakeVerticalLatex(w)
   if length.IsZero(w) then
     return raw("")

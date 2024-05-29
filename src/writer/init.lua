@@ -4,13 +4,13 @@ local file = require("internal.file")
 local element = require("internal.element")
 local table_ = require("writer.internal.table.table")
 
----@param d Pandoc
----@param options WriterOptions
+---@param d pandoc.Pandoc
+---@param options pandoc.WriterOptions
 ---@return string
 function Writer(d, options)
   d = d:walk({
-    ---@param t Table
-    ---@return Block
+    ---@param t pandoc.Table
+    ---@return pandoc.Block
     Table = function(t)
       return table_.MakeLatex(t)
     end,

@@ -13,16 +13,16 @@ local raw = element.Raw
 
 local table_ = {}
 
----@param pandocRows List<Row>
+---@param pandocRows pandoc.List<pandoc.Row>
 ---@param rowCount integer
 ---@param colCount integer
 ---@param source string|nil
----@return List<List<contentCellWithContent | mergeCell>>
+---@return pandoc.List<pandoc.List<contentCellWithContent | mergeCell>>
 local function makeNewRows(pandocRows, rowCount, colCount, source)
-  ---@type List<List<contentCellWithContent | mergeCell | nil>>
+  ---@type pandoc.List<pandoc.List<contentCellWithContent | mergeCell | nil>>
   local rows = pandoc.List({})
   for _ = 1, rowCount do
-    ---@type List<contentCellWithContent | mergeCell | nil>
+    ---@type pandoc.List<contentCellWithContent | mergeCell | nil>
     local r = pandoc.List({})
     for _ = 1, colCount do
       r:insert(nil)
@@ -80,12 +80,12 @@ local function makeNewRows(pandocRows, rowCount, colCount, source)
   return rows --[[@as any]]
 end
 
----@param rows List<List<contentCellWithContent | mergeCell>>
----@param colAlignments List<"left" | "center" | "right">
----@param pandocRows List<Row> # Used to derive per-cell alignments.
----@return List<List<contentCellWithContentAlignment | mergeCell>>
+---@param rows pandoc.List<pandoc.List<contentCellWithContent | mergeCell>>
+---@param colAlignments pandoc.List<"left" | "center" | "right">
+---@param pandocRows pandoc.List<pandoc.Row> # Used to derive per-cell alignments.
+---@return pandoc.List<pandoc.List<contentCellWithContentAlignment | mergeCell>>
 local function setAlignments(rows, colAlignments, pandocRows)
-  ---@cast rows List<List<contentCellWithContentAlignment | mergeCell>>
+  ---@cast rows pandoc.List<pandoc.List<contentCellWithContentAlignment | mergeCell>>
 
   for y = 1, #rows do
     local colIndex = 1
@@ -103,11 +103,11 @@ local function setAlignments(rows, colAlignments, pandocRows)
   return rows
 end
 
----@param rows List<List<contentCellWithContentAlignment | mergeCell>>
----@param colWidths List<length | "max-content">
----@param colBorders List<{ L: length, R: length }>
+---@param rows pandoc.List<pandoc.List<contentCellWithContentAlignment | mergeCell>>
+---@param colWidths pandoc.List<length | "max-content">
+---@param colBorders pandoc.List<{ L: length, R: length }>
 ---@param source string|nil
----@return List<List<contentCellWithContentAlignmentWidth | mergeCell>>
+---@return pandoc.List<pandoc.List<contentCellWithContentAlignmentWidth | mergeCell>>
 local function setWidths(rows, colWidths, colBorders, source)
   ---@cast rows contentCellWithContentAlignmentWidth
 
@@ -153,10 +153,10 @@ local function setWidths(rows, colWidths, colBorders, source)
   return rows
 end
 
----@param rows List<List<contentCellWithContentAlignmentWidth | mergeCell>>
----@param rowBorders List<{ T: length, B: length }>
----@param colBorders List<{ L: length, R: length }>
----@return List<List<contentCellWithContentAlignmentWidthBorder | mergeCell>>
+---@param rows pandoc.List<pandoc.List<contentCellWithContentAlignmentWidth | mergeCell>>
+---@param rowBorders pandoc.List<{ T: length, B: length }>
+---@param colBorders pandoc.List<{ L: length, R: length }>
+---@return pandoc.List<pandoc.List<contentCellWithContentAlignmentWidthBorder | mergeCell>>
 local function setBorders(rows, rowBorders, colBorders)
   ---@cast rows contentCellWithContentAlignmentWidthBorder
 
@@ -178,13 +178,13 @@ local function setBorders(rows, rowBorders, colBorders)
   return rows
 end
 
----@param pandocRows List<Row>
----@param colAlignments List<"left" | "center" | "right">
----@param colWidths List<length | "max-content">
----@param rowBorders List<{ T: length, B: length }>
----@param colBorders List<{ L: length, R: length }>
+---@param pandocRows pandoc.List<pandoc.Row>
+---@param colAlignments pandoc.List<"left" | "center" | "right">
+---@param colWidths pandoc.List<length | "max-content">
+---@param rowBorders pandoc.List<{ T: length, B: length }>
+---@param colBorders pandoc.List<{ L: length, R: length }>
 ---@param source string|nil
----@return List<List<cell>>
+---@return pandoc.List<pandoc.List<cell>>
 local function makeRows(pandocRows, colAlignments, colWidths, rowBorders, colBorders, source)
   local rowCount = #pandocRows
   local colCount = #colAlignments
@@ -196,9 +196,9 @@ local function makeRows(pandocRows, colAlignments, colWidths, rowBorders, colBor
   return rows
 end
 
----@param c Caption
+---@param c pandoc.Caption
 ---@param source string | nil
----@return Inline | nil
+---@return pandoc.Inline | nil
 local function getCaption(c, source)
   if c.short ~= nil and #c.short > 0 then
     log.Warning("table has a short caption, it is ignored", source)
@@ -209,9 +209,9 @@ end
 
 ---@param x integer
 ---@param y integer
----@param rows List<List<cell>>
----@param colAlignments List<"left" | "center" | "right">
----@return Inline
+---@param rows pandoc.List<pandoc.List<cell>>
+---@param colAlignments pandoc.List<"left" | "center" | "right">
+---@return pandoc.Inline
 local function makeContentCellLatex(x, y, rows, colAlignments)
   local c = rows[y][x]
   assert(c.Type == "contentCell")
@@ -231,9 +231,9 @@ end
 
 ---@param x integer
 ---@param y integer
----@param rows List<List<cell>>
----@param colAlignments List<"left" | "center" | "right">
----@return Inline | nil
+---@param rows pandoc.List<pandoc.List<cell>>
+---@param colAlignments pandoc.List<"left" | "center" | "right">
+---@return pandoc.Inline | nil
 local function makeMergeCellLatex(x, y, rows, colAlignments)
   local c = rows[y][x]
   assert(c.Type == "mergeCell")
@@ -258,9 +258,9 @@ end
 
 ---@param x integer
 ---@param y integer
----@param rows List<List<cell>>
----@param colAlignments List<"left" | "center" | "right">
----@return Inline | nil
+---@param rows pandoc.List<pandoc.List<cell>>
+---@param colAlignments pandoc.List<"left" | "center" | "right">
+---@return pandoc.Inline | nil
 local function makeCellLatex(x, y, rows, colAlignments)
   local c = rows[y][x]
 
@@ -278,7 +278,7 @@ local function makeCellLatex(x, y, rows, colAlignments)
 end
 
 ---@param y integer
----@param rows List<List<cell>>
+---@param rows pandoc.List<pandoc.List<cell>>
 ---@return boolean
 local function canRowPageBreak(y, rows)
   for x = 1, #rows[y] do
@@ -309,8 +309,8 @@ local function canRowPageBreak(y, rows)
 end
 
 ---@param y integer
----@param rows List<List<cell>>
----@return { T: Inline | nil, B: Inline | nil }
+---@param rows pandoc.List<pandoc.List<cell>>
+---@return { T: pandoc.Inline | nil, B: pandoc.Inline | nil }
 local function makeRowBorderLatex(y, rows)
   local topWr = pandoc.List({})
   local bottomWr = pandoc.List({})
@@ -342,10 +342,10 @@ local function makeRowBorderLatex(y, rows)
 end
 
 ---@param y integer
----@param rows List<List<cell>>
----@param colAlignments List<"left" | "center" | "right">
+---@param rows pandoc.List<pandoc.List<cell>>
+---@param colAlignments pandoc.List<"left" | "center" | "right">
 ---@param canPageBreak boolean
----@return Inline
+---@return pandoc.Inline
 local function makeRowLatex(y, rows, canPageBreak, colAlignments)
   local cells = pandoc.Inlines({})
   for x = 1, #rows[y] do
@@ -369,10 +369,10 @@ local function makeRowLatex(y, rows, canPageBreak, colAlignments)
   })
 end
 
----@param rows List<List<cell>>
----@param colAlignments List<"left" | "center" | "right">
+---@param rows pandoc.List<pandoc.List<cell>>
+---@param colAlignments pandoc.List<"left" | "center" | "right">
 ---@param canPageBreak boolean
----@return Inline | nil
+---@return pandoc.Inline | nil
 local function makeRowsLatex(rows, colAlignments, canPageBreak)
   local inlines = pandoc.Inlines({})
   for y = 1, #rows do
@@ -381,7 +381,7 @@ local function makeRowsLatex(rows, colAlignments, canPageBreak)
   return #rows > 0 and merge(fun.Intersperse(inlines, raw("\n"))) or nil
 end
 
----@param pandocTable Table
+---@param pandocTable pandoc.Table
 ---@param tableConfig tableConfig
 ---@return tbl
 local function makeTable(pandocTable, tableConfig)
@@ -456,15 +456,15 @@ local function makeTable(pandocTable, tableConfig)
 end
 
 ---@param id string
----@param caption Inline | nil
+---@param caption pandoc.Inline | nil
 ---@return boolean
 local function isNumberedCaption(id, caption)
   return id ~= "" or caption ~= nil
 end
 
 ---@param id string
----@param caption Inline | nil
----@return Inline | nil
+---@param caption pandoc.Inline | nil
+---@return pandoc.Inline | nil
 local function makeFirstHeadCaptionRowLatex(id, caption)
   if isNumberedCaption(id, caption) then
     return merge({
@@ -487,8 +487,8 @@ local function makeFirstHeadCaptionRowLatex(id, caption)
 end
 
 ---@param id string
----@param caption Inline | nil
----@return Inline
+---@param caption pandoc.Inline | nil
+---@return pandoc.Inline
 local function makeOtherHeadCaptionRowLatex(id, caption)
   if isNumberedCaption(id, caption) then
     return merge({
@@ -572,7 +572,7 @@ local function makeTableLatex(t, tableConfig)
   })
 end
 
----@param t Table
+---@param t pandoc.Table
 ---@return tableConfig
 local function makeTableConfig(t)
   local separateHead = false
@@ -607,8 +607,8 @@ local function makeTableConfig(t)
   }
 end
 
----@param pandocTable Table
----@return Block
+---@param pandocTable pandoc.Table
+---@return pandoc.Block
 function table_.MakeLatex(pandocTable)
   local tableConfig = makeTableConfig(pandocTable)
   local t = makeTable(pandocTable, tableConfig)

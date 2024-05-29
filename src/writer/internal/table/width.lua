@@ -9,11 +9,11 @@ local width = {}
 
 -- I'm not sure if Pandoc allows mixing default and non-default column widths but we do. One of our filters surely
 -- generates such tables. Also these widths account for borders, similar to CSS's "box-sizing: border-box".
----@param colSpecs List<ColSpec>
+---@param colSpecs pandoc.List<pandoc.ColSpec>
 ---@param source string | nil
----@return List<length | "max-content">
+---@return pandoc.List<length | "max-content">
 function width.MakeColWidths(colSpecs, source)
-  ---@type List<length | "max-content">
+  ---@type pandoc.List<length | "max-content">
   local widths = pandoc.List({})
 
   for _, colSpec in ipairs(colSpecs) do
@@ -47,7 +47,7 @@ end
 
 ---@param w length # Width.
 ---@param b { L: length, R: length } # Border.
----@return Inline
+---@return pandoc.Inline
 function width.MakeLatex(w, b)
   return merge({
     raw([[\dimexpr]]),

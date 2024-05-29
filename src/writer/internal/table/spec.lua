@@ -9,7 +9,7 @@ local spec = {}
 ---@param a "left" | "center" | "right" # Alignment.
 ---@param w length | "max-content" # Width.
 ---@param b { L: length, R: length } # Border.
----@return Inline
+---@return pandoc.Inline
 function spec.MakeLatex(a, w, b)
   return merge({
     border.MakeVerticalLatex(b.L),
@@ -18,10 +18,10 @@ function spec.MakeLatex(a, w, b)
   })
 end
 
----@param colAlignments List<"left" | "center" | "right">
----@param colWidths List<length | "max-content">
----@param colBorders List<{ L: length, R: length }>
----@return Inline
+---@param colAlignments pandoc.List<"left" | "center" | "right">
+---@param colWidths pandoc.List<length | "max-content">
+---@param colBorders pandoc.List<{ L: length, R: length }>
+---@return pandoc.Inline
 function spec.MakeAllLatex(colAlignments, colWidths, colBorders)
   local inlines = pandoc.Inlines({})
   for i = 1, #colAlignments do

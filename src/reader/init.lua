@@ -4,7 +4,7 @@ local element = require("internal.element")
 
 ---@param input string | pandoc.Sources
 ---@param options pandoc.ReaderOptions
----@return Pandoc
+---@return pandoc.Pandoc
 local function read(input, options)
   return pandoc.read(input, {
     format = "commonmark",
@@ -30,21 +30,21 @@ end
 
 ---@param input string | pandoc.Sources
 ---@param options pandoc.ReaderOptions
----@return Blocks
+---@return pandoc.Blocks
 local function readBlocks(input, options)
   return read(input, options).blocks
 end
 
 ---@param input string | pandoc.Sources
 ---@param options pandoc.ReaderOptions
----@return Inlines
+---@return pandoc.Inlines
 local function readInlines(input, options)
   return pandoc.utils.blocks_to_inlines(readBlocks(input, options))
 end
 
 ---@param input string | pandoc.Sources
 ---@param options pandoc.ReaderOptions
----@return Pandoc
+---@return pandoc.Pandoc
 local function readHtml(input, options)
   return pandoc.read(input, {
     format = "html",
@@ -61,35 +61,35 @@ end
 
 ---@param input string | pandoc.Sources
 ---@param options pandoc.ReaderOptions
----@return Blocks
+---@return pandoc.Blocks
 local function readHtmlBlocks(input, options)
   return readHtml(input, options).blocks
 end
 
 ---@param input string | pandoc.Sources
 ---@param options pandoc.ReaderOptions
----@return Inlines
+---@return pandoc.Inlines
 local function readHtmlInlines(input, options)
   return pandoc.utils.blocks_to_inlines(readHtmlBlocks(input, options))
 end
 
 ---@param sources pandoc.Sources
 ---@param options pandoc.ReaderOptions
----@return Pandoc
+---@return pandoc.Pandoc
 function Reader(sources, options)
   local d = read(sources, options)
 
   d = d:walk({
-    ---@param b RawBlock
-    ---@return RawBlock | Blocks
+    ---@param b pandoc.RawBlock
+    ---@return pandoc.RawBlock | pandoc.Blocks
     RawBlock = function(b)
       if b.format == "html" then
         return readHtmlBlocks(b.text, options)
       end
       return b
     end,
-    ---@param i RawInline
-    ---@return RawInline | Inlines
+    ---@param i pandoc.RawInline
+    ---@return pandoc.RawInline | pandoc.Inlines
     RawInline = function(i)
       if i.format == "html" then
         return readHtmlInlines(i.text, options)
@@ -101,8 +101,8 @@ function Reader(sources, options)
   d = element.SetWidths(d)
 
   d = d:walk({
-    ---@param t Table
-    ---@return Table
+    ---@param t pandoc.Table
+    ---@return pandoc.Table
     Table = function(t)
       local captionString = t.attr.attributes["caption"] or ""
 
@@ -121,8 +121,8 @@ function Reader(sources, options)
   -- hyphenate
   -- no-hyphenate
   d = d:walk({
-    ---@param t Table
-    ---@return Table
+    ---@param t pandoc.Table
+    ---@return pandoc.Table
     Table = function(t)
       local flags = { "hyphenate", "repeat-head", "repeat-foot", "separate-head", "separate-foot" }
       local flagToValue = {}
@@ -146,8 +146,8 @@ function Reader(sources, options)
   })
 
   d = d:walk({
-    ---@param t Table
-    ---@return Table
+    ---@param t pandoc.Table
+    ---@return pandoc.Table
     Table = function(t)
       if t.attr.attributes["width"] and t.attr.attributes["width"] ~= "" then
         log.Warning("table width is ignored", element.GetSource(t))
@@ -162,7 +162,7 @@ function Reader(sources, options)
         t.colspecs[i][2] = 0.8 / #t.colspecs
       end
 
-      ---@type List<List<number | "max-content">>
+      ---@type pandoc.List<pandoc.List<number | "max-content">>
       local colToWidthsFromHead = pandoc.List({})
       for _ = 1, #t.colspecs do
         colToWidthsFromHead:insert(pandoc.List({}))
@@ -179,19 +179,19 @@ function Reader(sources, options)
 
           local cellWidthString = c.attr.attributes["width"]
 
-          ---@type Plain | nil
+          ---@type pandoc.Plain | nil
           local p = (
             #c.contents == 1
-            and (c.contents[1] --[[@as Plain | Block]]).tag == "Plain"
-            and c.contents[1] --[[@as Plain]]
+            and (c.contents[1] --[[@as pandoc.Plain | pandoc.Block]]).tag == "Plain"
+            and c.contents[1] --[[@as pandoc.Plain]]
           ) or nil
 
-          ---@type Span | nil
+          ---@type pandoc.Span | nil
           local s = (
             p ~= nil
             and #p.content == 1
-            and (p.content[1] --[[@as Span | Inline]]).tag == "Span"
-            and p.content[1] --[[@as Span]]
+            and (p.content[1] --[[@as pandoc.Span | pandoc.Inline]]).tag == "Span"
+            and p.content[1] --[[@as pandoc.Span]]
           ) or nil
 
           local spanWidthString = s and s.attr.attributes["width"] or nil

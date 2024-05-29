@@ -5,19 +5,19 @@ local element = {}
 
 local mdFormat = "gfm-yaml_metadata_block"
 
----@param e { attr: Attr }
+---@param e { attr: pandoc.Attr }
 ---@return string|nil
 function element.GetSource(e)
   return e.attr.attributes["data-pos"]
 end
 
----@param e { attr: Attr }
+---@param e { attr: pandoc.Attr }
 ---@return nil
 local function removeSource(e)
   e.attr.attributes["data-pos"] = nil
 end
 
----@param e { attr: Attr }
+---@param e { attr: pandoc.Attr }
 ---@return nil
 local function setWidth(e)
   local w = nil
@@ -35,13 +35,13 @@ local function setWidth(e)
   end
 end
 
----@param e Div | Span
+---@param e pandoc.Div | pandoc.Span
 ---@return boolean
 local function isMerge(e)
   return e.attr.attributes["data-template--is-merge"] == "1"
 end
 
----@param e Div | Span
+---@param e pandoc.Div | pandoc.Span
 ---@return boolean
 local function isRedundant(e)
   if e.attr.identifier ~= "" then
@@ -59,16 +59,16 @@ local function isRedundant(e)
   return true
 end
 
----@param inlines Inlines
----@return Inline
+---@param inlines pandoc.Inlines
+---@return pandoc.Inline
 function element.Merge(inlines)
   local i = pandoc.Span(inlines)
   i.attr.attributes["data-template--is-merge"] = "1"
   return i
 end
 
----@param blocks Blocks
----@return Block
+---@param blocks pandoc.Blocks
+---@return pandoc.Block
 function element.MergeBlock(blocks)
   local b = pandoc.Div(blocks)
   b.attr.attributes["data-template--is-merge"] = "1"
@@ -76,29 +76,29 @@ function element.MergeBlock(blocks)
 end
 
 ---@param s string
----@return Inline
+---@return pandoc.Inline
 function element.Raw(s)
   return pandoc.RawInline("latex", s)
 end
 
 ---@param s string
----@return Inline
+---@return pandoc.Inline
 function element.Md(s)
   return element.Merge(pandoc.utils.blocks_to_inlines(pandoc.read(s, mdFormat).blocks))
 end
 
 ---@param s string
----@return Block
+---@return pandoc.Block
 function element.MdBlock(s)
   return element.MergeBlock(pandoc.read(s, mdFormat).blocks)
 end
 
----@param document Pandoc
----@return Pandoc
+---@param document pandoc.Pandoc
+---@return pandoc.Pandoc
 function element.RemoveMerges(document)
   return document:walk({
-    ---@param d Div
-    ---@return Div | Blocks
+    ---@param d pandoc.Div
+    ---@return pandoc.Div | pandoc.Blocks
     Div = function(d)
       if isMerge(d) then
         return d.content
@@ -106,8 +106,8 @@ function element.RemoveMerges(document)
       return d
     end,
 
-    ---@param s Span
-    ---@return Span | Inlines
+    ---@param s pandoc.Span
+    ---@return pandoc.Span | pandoc.Inlines
     Span = function(s)
       if isMerge(s) then
         return s.content
@@ -118,12 +118,12 @@ function element.RemoveMerges(document)
 end
 
 ---Creates redundant Divs and Spans.
----@param document Pandoc
----@return Pandoc
+---@param document pandoc.Pandoc
+---@return pandoc.Pandoc
 function element.RemoveSources(document)
   return document:walk({
-    ---@param b Block
-    ---@return Block
+    ---@param b pandoc.Block
+    ---@return pandoc.Block
     Block = function(b)
       if b["attr"] ~= nil then
         removeSource(b)
@@ -131,8 +131,8 @@ function element.RemoveSources(document)
       return b
     end,
 
-    ---@param i Inline
-    ---@return Inline
+    ---@param i pandoc.Inline
+    ---@return pandoc.Inline
     Inline = function(i)
       if i["attr"] ~= nil then
         removeSource(i)
@@ -142,12 +142,12 @@ function element.RemoveSources(document)
   })
 end
 
----@param document Pandoc
----@return Pandoc
+---@param document pandoc.Pandoc
+---@return pandoc.Pandoc
 function element.SetWidths(document)
   return document:walk({
-    ---@param b Block
-    ---@return Block
+    ---@param b pandoc.Block
+    ---@return pandoc.Block
     Block = function(b)
       if b["attr"] ~= nil then
         setWidth(b)
@@ -155,8 +155,8 @@ function element.SetWidths(document)
       return b
     end,
 
-    ---@param i Inline
-    ---@return Inline
+    ---@param i pandoc.Inline
+    ---@return pandoc.Inline
     Inline = function(i)
       if i["attr"] ~= nil then
         setWidth(i)
@@ -166,10 +166,10 @@ function element.SetWidths(document)
 
     ---Sets widths for element components because they aren't covered by Block
     ---and Inline walkthroughs.
-    ---@param t Table
-    ---@return Table
+    ---@param t pandoc.Table
+    ---@return pandoc.Table
     Table = function(t)
-      ---@param rows List<Row>
+      ---@param rows pandoc.List<pandoc.Row>
       local setWidthsRows = function(rows)
         for _, r in ipairs(rows) do
           setWidth(r)
@@ -194,12 +194,12 @@ function element.SetWidths(document)
   })
 end
 
----@param document Pandoc
----@return Pandoc
+---@param document pandoc.Pandoc
+---@return pandoc.Pandoc
 function element.RemoveRedundants(document)
   return document:walk({
-    ---@param d Div
-    ---@return Div | Blocks
+    ---@param d pandoc.Div
+    ---@return pandoc.Div | pandoc.Blocks
     Div = function(d)
       if isRedundant(d) then
         return d.content
@@ -207,8 +207,8 @@ function element.RemoveRedundants(document)
       return d
     end,
 
-    ---@param s Span
-    ---@return Span | Inlines
+    ---@param s pandoc.Span
+    ---@return pandoc.Span | pandoc.Inlines
     Span = function(s)
       if isRedundant(s) then
         return s.content

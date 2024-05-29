@@ -8,7 +8,7 @@ local raw = element.Raw
 local length = {}
 
 ---@param v number
----@return Inline
+---@return pandoc.Inline
 local function makeNumberLatex(v)
   return raw(tostring(string.format("%.4f", v):gsub("%.?0+$", "")))
 end
@@ -97,7 +97,7 @@ function length.Parse(s)
 end
 
 ---@param l length
----@return Inline
+---@return pandoc.Inline
 function length.MakeWidthLatex(l)
   local toAdd = pandoc.Inlines({})
   local toSubtract = pandoc.Inlines({})
@@ -133,13 +133,13 @@ function length.MakeWidthLatex(l)
 end
 
 ---@param l length
----@return Inline
+---@return pandoc.Inline
 function length.MakeHeightLatex(l)
   return length.MakeLatex(l)
 end
 
 ---@param l length
----@return Inline
+---@return pandoc.Inline
 function length.MakeLatex(l)
   local toAdd = pandoc.Inlines({})
   local toSubtract = pandoc.Inlines({})

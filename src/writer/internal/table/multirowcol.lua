@@ -15,15 +15,15 @@ end
 
 ---@param c contentCell
 ---@param x integer # The column index.
----@param colAlignments List<"left" | "center" | "right">
+---@param colAlignments pandoc.List<"left" | "center" | "right">
 ---@return boolean
 function multirowcol.IsMulticol(c, x, colAlignments)
   return c.ColSpan > 1 or c.Alignment ~= colAlignments[x]
 end
 
----@param content Inline
+---@param content pandoc.Inline
 ---@param forCell contentCell
----@return Inline
+---@return pandoc.Inline
 function multirowcol.MakeMultirowLatex(content, forCell)
   return merge({
     raw([[\multirow]]),
@@ -47,9 +47,9 @@ function multirowcol.MakeMultirowLatex(content, forCell)
   })
 end
 
----@param content Inline
+---@param content pandoc.Inline
 ---@param forCell contentCell
----@return Inline
+---@return pandoc.Inline
 function multirowcol.MakeMulticolLatex(content, forCell)
   return merge({
     raw([[\multicolumn]]),
