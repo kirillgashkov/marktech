@@ -198,9 +198,12 @@ $endif$
 \usepackage{longtable}
 
 
-% Provides \specialrule command.
+% Provides \specialrule command. See
+% https://tex.stackexchange.com/questions/88929/vertical-table-lines-are-discontinuous-with-booktabs.
 \usepackage{booktabs}
-
+\aboverulesep=0pt
+\belowrulesep=0pt
+\renewcommand{\arraystretch}{1.35}
 
 % Provides "!" column type (and possibly some other column types).
 \usepackage{array}

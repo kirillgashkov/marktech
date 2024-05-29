@@ -79,8 +79,21 @@ local function makeHorizontalLatex(i, w, l, maxIndex, config, source)
         raw([[{0pt}]]),
       })
     else
-      log.Warning("table row has unsupported border width, the supported width is used instead", source)
-      return raw([[\cline{]] .. i .. [[-]] .. i + l - 1 .. [[}]])
+      return merge({
+        raw([[\cmidrule]]),
+        merge({
+          raw("["),
+          length.MakeLatex(w),
+          raw("]"),
+        }),
+        merge({
+          raw([[{]]),
+          raw(tostring(i)),
+          raw([[-]]),
+          raw(tostring(i + l - 1)),
+          raw([[}]]),
+        }),
+      })
     end
   end
 end
