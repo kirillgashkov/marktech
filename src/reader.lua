@@ -1,6 +1,7 @@
 local log = require("internal.log")
 local element = require("internal.element")
 local utility = require("internal.utility.utility")
+local length = require("internal.table.length")
 
 ---@param input string | pandoc.Sources
 ---@param options pandoc.ReaderOptions
@@ -48,6 +49,7 @@ end
 function Reader(sources, options)
   local d = read(sources, options)
 
+  d = element.SetWidths(d)
   d = d:walk({
     ---@param t Table
     ---@return Table
@@ -65,7 +67,108 @@ function Reader(sources, options)
       return t
     end,
   })
-  d = element.SetWidths(d)
+  d = d:walk({
+    ---@param t Table
+    ---@return Table
+    Table = function(t)
+      if t.attr.attributes["width"] and t.attr.attributes["width"] ~= "" then
+        log.Warning("table width is ignored", element.GetSource(t))
+        log.Note("use column widths instead", element.GetSource(t))
+      end
+
+      -- Resets the column widths to be equal and in sum amount to 80%. The
+      -- default reader infers the column widths from the source with the
+      -- --columns option taken into account. This is not as deterministic as we
+      -- would like, so we perform a reset.
+      for i = 1, #t.colspecs do
+        t.colspecs[i][2] = 0.8 / #t.colspecs
+      end
+
+      ---@type List<List<number | nil>>
+      local colToWidthsFromHead = pandoc.List({})
+      for _ = 1, #t.colspecs do
+        colToWidthsFromHead:insert(pandoc.List({}))
+      end
+
+      for rowIndex = 1, #t.head.rows do
+        local r = t.head.rows[rowIndex]
+        local colIndexStart = 0
+        local colIndexEnd = 0
+        for cellIndex = 1, #r.cells do
+          local c = r.cells[cellIndex]
+          colIndexStart = colIndexEnd + 1
+          colIndexEnd = colIndexStart + c.col_span - 1
+
+          if #c.contents ~= 1 then
+            goto continue
+          end
+
+          ---@type Plain | Block
+          local p = c.contents[1]
+          if p.tag ~= "Plain" then
+            goto continue
+          end
+          ---@cast p Plain
+
+          if #p.content ~= 1 then
+            goto continue
+          end
+
+          ---@type Span | Inline
+          local s = p.content[1]
+          if s.tag ~= "Span" then
+            goto continue
+          end
+          ---@cast s Span
+
+          if not s.attr.attributes["width"] or s.attr.attributes["width"] == "" then
+            goto continue
+          end
+          local colWidthString = s.attr.attributes["width"]
+
+          local subColWidth
+          if colWidthString == "max-content" then
+            subColWidth = nil
+          else
+            local parsedColWidth = length.Parse(colWidthString)
+            if parsedColWidth ~= nil then
+              for u, v in pairs(parsedColWidth) do
+                if u == "%" then
+                  subColWidth = v / (colIndexStart - colIndexEnd + 1) / 100
+                else
+                  log.Warning("table column has width unit other than %, it is ignored", element.GetSource(t))
+                  break
+                end
+              end
+            else
+              log.Warning("table column has invalid width, it is ignored", element.GetSource(t))
+              break
+            end
+          end
+
+          for i = colIndexStart, colIndexEnd do
+            colToWidthsFromHead[i]:insert(subColWidth)
+          end
+
+          ::continue::
+        end
+      end
+
+      for i = 1, #t.colspecs do
+        local widths = colToWidthsFromHead[i]
+        if #widths == 0 then
+          goto continue
+        end
+        if #widths > 1 then
+          log.Warning("table column has multiple widths specified in the head, only the first one is used", element.GetSource(t))
+        end
+        t.colspecs[i][2] = widths[1]
+        ::continue::
+      end
+
+      return t
+    end,
+  })
 
   return d
 end

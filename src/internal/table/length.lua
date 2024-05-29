@@ -73,6 +73,29 @@ function length.IsZero(l)
   return length.IsEqual(l, length.Zero())
 end
 
+---@param u string
+local function makeUnitRegex(u)
+  return re.compile([[ { %d+ ( "." %d+ )? } "]] .. u .. [[" ]])
+end
+
+local unitRegexes = {}
+for _, u in ipairs({ "pt", "%" }) do
+  unitRegexes[u] = makeUnitRegex(u)
+end
+
+---Returns nil if the string is not a valid length.
+---@param s string
+---@return length | nil
+function length.Parse(s)
+  for u, r in pairs(unitRegexes) do
+    local v = r:match(s)
+    if v then
+      return { [u] = tonumber(v) }
+    end
+  end
+  return nil
+end
+
 ---@param l length
 ---@return Inline
 function length.MakeWidthLatex(l)
