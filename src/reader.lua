@@ -149,32 +149,40 @@ function Reader(sources, options)
           colIndexStart = colIndexEnd + 1
           colIndexEnd = colIndexStart + c.col_span - 1
 
-          if #c.contents ~= 1 then
-            goto continue
-          end
+          local cellWidthString = c.attr.attributes["width"]
 
-          ---@type Plain | Block
-          local p = c.contents[1]
-          if p.tag ~= "Plain" then
-            goto continue
-          end
-          ---@cast p Plain
+          ---@type Plain | nil
+          local p = (
+            #c.contents == 1
+            and (c.contents[1] --[[@as Plain | Block]]).tag == "Plain"
+            and c.contents[1] --[[@as Plain]]
+          ) or nil
 
-          if #p.content ~= 1 then
-            goto continue
-          end
+          ---@type Span | nil
+          local s = (
+            p ~= nil
+            and #p.content == 1
+            and (p.content[1] --[[@as Span | Inline]]).tag == "Span"
+            and p.content[1] --[[@as Span]]
+          ) or nil
 
-          ---@type Span | Inline
-          local s = p.content[1]
-          if s.tag ~= "Span" then
-            goto continue
-          end
-          ---@cast s Span
+          local spanWidthString = s and s.attr.attributes["width"] or nil
 
-          if not s.attr.attributes["width"] or s.attr.attributes["width"] == "" then
+          local colWidthString
+          if cellWidthString and cellWidthString ~= nil and spanWidthString and spanWidthString ~= nil then
+            log.Warning(
+              "table column has width specified in the head cell and the head cell's span, only the head cell one is used",
+              element.GetSource(t)
+            )
+            colWidthString = cellWidthString
+          elseif cellWidthString and cellWidthString ~= nil then
+            colWidthString = cellWidthString
+          elseif spanWidthString and spanWidthString ~= nil then
+            colWidthString = spanWidthString
+          else
             goto continue
           end
-          local colWidthString = s.attr.attributes["width"]
+          assert(type(colWidthString) == "string")
 
           -- It would be better to use number | nil here but when subColWidth is
           -- nil, colToWidthsFromHead[i]:insert(subColWidth) from below won't
