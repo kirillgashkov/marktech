@@ -78,13 +78,39 @@ local function makeHorizontalLatex(i, w, l, maxIndex, config, source)
         raw([[{0pt}]]),
         raw([[{0pt}]]),
       })
+      -- return merge({
+      --   raw([[\noalign]]),
+      --   raw([[{]]),
+      --   raw([[\hrule]]),
+      --   pandoc.Space(),
+      --   raw([[height]]),
+      --   pandoc.Space(),
+      --   length.MakeLatex(w),
+      --   pandoc.Space(),
+      --   raw([[}]]),
+      -- })
     else
+      -- return merge({
+      --   raw([[\cmidrule]]),
+      --   merge({
+      --     raw("["),
+      --     length.MakeLatex(w),
+      --     raw("]"),
+      --   }),
+      --   merge({
+      --     raw([[{]]),
+      --     raw(tostring(i)),
+      --     raw([[-]]),
+      --     raw(tostring(i + l - 1)),
+      --     raw([[}]]),
+      --   }),
+      -- })
       return merge({
-        raw([[\cmidrule]]),
+        raw([[\Cline]]),
         merge({
-          raw("["),
+          raw("{"),
           length.MakeLatex(w),
-          raw("]"),
+          raw("}"),
         }),
         merge({
           raw([[{]]),
