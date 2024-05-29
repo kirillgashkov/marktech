@@ -142,9 +142,7 @@ local function make_code_block(
   return code_block_el
 end
 
---
 -- New.
---
 
 local include = {}
 
