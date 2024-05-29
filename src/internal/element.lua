@@ -163,6 +163,34 @@ function element.SetWidths(document)
       end
       return i
     end,
+
+    ---Sets widths for element components because they aren't covered by Block
+    ---and Inline walkthroughs.
+    ---@param t Table
+    ---@return Table
+    Table = function(t)
+      ---@param rows List<Row>
+      local setWidthsRows = function(rows)
+        for _, r in ipairs(rows) do
+          setWidth(r)
+          for _, c in ipairs(r.cells) do
+            setWidth(c)
+          end
+        end
+      end
+
+      setWidth(t.head)
+      setWidthsRows(t.head.rows)
+      for _, b in ipairs(t.bodies) do
+        setWidth(b)
+        setWidthsRows(b.head)
+        setWidthsRows(b.body)
+      end
+      setWidth(t.foot)
+      setWidthsRows(t.foot.rows)
+
+      return t
+    end,
   })
 end
 
