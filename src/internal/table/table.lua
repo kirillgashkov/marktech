@@ -410,6 +410,10 @@ local function makeTable(pandocTable, tableConfig)
     tableConfig.OuterBorderWidth
   )
 
+  local headColAlignments = colAlignments:map(function(_)
+    return "center"
+  end)
+
   return {
     Id = pandocTable.attr.identifier,
     Caption = getCaption(pandocTable.caption, element.GetSource(pandocTable)),
@@ -420,7 +424,7 @@ local function makeTable(pandocTable, tableConfig)
     LastBottomBorder = length.Subtract(tableConfig.OuterBorderWidth, tableConfig.InnerBorderWidth),
     HeadRows = makeRows(
       headPandocRows,
-      colAlignments,
+      headColAlignments,
       colWidths,
       border.MakeRowBorders(
         #headPandocRows,
