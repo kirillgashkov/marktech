@@ -107,13 +107,7 @@ function length.MakeWidthLatex(l)
     if u == "pt" then
       component = merge({ makeNumberLatex(math.abs(v)), raw("pt") })
     elseif u == "%" then
-      component = merge({
-        raw([[(]]),
-        merge({ raw([[\real]]), raw([[{]]), makeNumberLatex(math.abs(v)), raw([[}]]) }),
-        raw([[*]]),
-        raw([[\textwidth]]),
-        raw([[)]]),
-      })
+      component = merge({ makeNumberLatex(math.abs(v)), raw([[\textwidth]]) })
     else
       log.Error("unsupported width unit: " .. u)
       assert(false)
@@ -131,8 +125,10 @@ function length.MakeWidthLatex(l)
   end
 
   return merge({
+    #toAdd + #toSubtract > 1 and merge({ raw([[\dimexpr]]), raw([[(]]) }) or merge({}),
     #toAdd > 0 and merge(fun.Intersperse(toAdd, raw(" + "))) or merge({}),
     #toSubtract > 0 and merge({ raw(" - "), merge(fun.Intersperse(toSubtract, raw(" - "))) }) or merge({}),
+    #toAdd + #toSubtract > 1 and merge({ raw([[)]]), raw([[\relax]]) }) or merge({}),
   })
 end
 
