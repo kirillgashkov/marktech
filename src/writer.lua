@@ -19,6 +19,7 @@ function Writer(d, options)
   d = element.RemoveSources(d)
   d = element.RemoveRedundants(d)
 
+  options.columns = 10000
   if options.variables["template_debug"] ~= nil and options.variables["template_debug"]:render() == "1" then
     io.stderr:write(pandoc.write(d, "native", options))
   end
