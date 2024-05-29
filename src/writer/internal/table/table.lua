@@ -5,7 +5,7 @@ local width = require("writer.internal.table.width")
 local border = require("writer.internal.table.border")
 local multirowcol = require("writer.internal.table.multirowcol")
 local spec = require("writer.internal.table.spec")
-local length = require("writer.internal.table.length")
+local length = require("internal.length")
 
 local element = require("internal.element")
 local merge = element.Merge

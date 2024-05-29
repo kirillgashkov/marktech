@@ -1,4 +1,4 @@
-local length = require("writer.internal.table.length")
+local length = require("internal.length")
 
 local element = require("internal.element")
 local merge = element.Merge
