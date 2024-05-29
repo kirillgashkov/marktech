@@ -10,20 +10,20 @@ local function read(input, options)
     format = "commonmark",
     extensions = {
       -- GFM extensions.
-      "autolink_bare_uris", -- https://github.github.com/gfm/#autolinks-extension-
-      "footnotes", -- https://github.blog/changelog/2021-09-30-footnotes-now-supported-in-markdown-fields/
-      "pipe_tables", -- https://github.github.com/gfm/#tables-extension-
-      "strikeout", -- https://github.github.com/gfm/#strikethrough-extension-
-      "task_lists", -- https://github.github.com/gfm/#task-list-items-extension-
+      autolink_bare_uris = true, -- https://github.github.com/gfm/#autolinks-extension-
+      footnotes = true, -- https://github.blog/changelog/2021-09-30-footnotes-now-supported-in-markdown-fields/
+      pipe_tables = true, -- https://github.github.com/gfm/#tables-extension-
+      strikeout = true, -- https://github.github.com/gfm/#strikethrough-extension-
+      task_lists = true, -- https://github.github.com/gfm/#task-list-items-extension-
       -- Must-have extensions.
-      "attributes",
-      "tex_math_dollars",
+      attributes = true,
+      tex_math_dollars = true,
       -- Handy extensions.
-      "fenced_divs",
-      "bracketed_spans",
-      "implicit_figures", -- TODO: Replace with a custom filter.
-      "smart",
-      "sourcepos",
+      fenced_divs = true,
+      bracketed_spans = true,
+      implicit_figures = true, -- TODO: Replace with a custom filter.
+      smart = true,
+      sourcepos = true,
     },
   }, options)
 end
@@ -42,13 +42,64 @@ local function readInlines(input, options)
   return pandoc.utils.blocks_to_inlines(readBlocks(input, options))
 end
 
+---@param input string | pandoc.Sources
+---@param options pandoc.ReaderOptions
+---@return Pandoc
+local function readHtml(input, options)
+  return pandoc.read(input, {
+    format = "html",
+    extensions = {
+      auto_identifiers = false,
+      empty_paragraphs = true,
+      line_blocks = false,
+      smart = true,
+      task_lists = true,
+      tex_math_dollars = true,
+    },
+  }, options)
+end
+
+---@param input string | pandoc.Sources
+---@param options pandoc.ReaderOptions
+---@return Blocks
+local function readHtmlBlocks(input, options)
+  return readHtml(input, options).blocks
+end
+
+---@param input string | pandoc.Sources
+---@param options pandoc.ReaderOptions
+---@return Inlines
+local function readHtmlInlines(input, options)
+  return pandoc.utils.blocks_to_inlines(readHtmlBlocks(input, options))
+end
+
 ---@param sources pandoc.Sources
 ---@param options pandoc.ReaderOptions
 ---@return Pandoc
 function Reader(sources, options)
   local d = read(sources, options)
 
+  d = d:walk({
+    ---@param b RawBlock
+    ---@return RawBlock | Blocks
+    RawBlock = function(b)
+      if b.format == "html" then
+        return readHtmlBlocks(b.text, options)
+      end
+      return b
+    end,
+    ---@param i RawInline
+    ---@return RawInline | Inlines
+    RawInline = function(i)
+      if i.format == "html" then
+        return readHtmlInlines(i.text, options)
+      end
+      return i
+    end,
+  })
+
   d = element.SetWidths(d)
+
   d = d:walk({
     ---@param t Table
     ---@return Table

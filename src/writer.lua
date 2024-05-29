@@ -23,7 +23,15 @@ function Writer(d, options)
     io.stderr:write(pandoc.write(d, "native", options))
   end
   options.columns = 10000
-  return pandoc.write(d, "latex", options)
+  return pandoc.write(d, {
+    format = "latex",
+    extensions = {
+      auto_identifiers = false,
+      latex_macros = false,
+      smart = true,
+      task_lists = true,
+    },
+  }, options)
 end
 
 ---@return string
