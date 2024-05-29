@@ -51,55 +51,27 @@ end
 ---@param w length # Border width.
 ---@param l integer # Border length.
 ---@param maxIndex integer
----@param config config
 ---@return Inline | nil
-local function makeHorizontalLatex(i, w, l, maxIndex, config)
+local function makeHorizontalLatex(i, w, l, maxIndex)
   if length.IsZero(w) then
     return nil
   end
 
-  local useLine = length.IsEqual(w, config.ArrayRuleWidth)
   local useFull = i == 1 and i + l - 1 == maxIndex
-
-  if useLine then
-    if useFull then
-      return raw([[\hline]])
-    else
-      return raw([[\cline{]] .. i .. [[-]] .. i + l - 1 .. [[}]])
-    end
+  if useFull then
+    return merge({ raw([[\varhline]]), raw([[{]]), length.MakeLatex(w), raw([[}]]) })
   else
-    if useFull then
-      return merge({
-        raw([[\varhline]]),
-        raw([[{]]),
-        length.MakeLatex(w),
-        raw([[}]]),
-      })
-    else
-      return merge({
-        raw([[\varcline]]),
-        merge({
-          raw("{"),
-          length.MakeLatex(w),
-          raw("}"),
-        }),
-        merge({
-          raw([[{]]),
-          raw(tostring(i)),
-          raw([[-]]),
-          raw(tostring(i + l - 1)),
-          raw([[}]]),
-        }),
-      })
-    end
+    return merge({
+      raw([[\varcline]]),
+      merge({ raw([[{]]), length.MakeLatex(w), raw([[}]]) }),
+      merge({ raw([[{]]), raw(tostring(i)), raw([[-]]), raw(tostring(i + l - 1)), raw([[}]]) }),
+    })
   end
 end
 
 ---@param wr List<length> # Border width row.
----@param config config
----@param source string | nil
 ---@return Inline | nil
-function border.MakeHorizontalLatex(wr, config, source)
+function border.MakeHorizontalLatex(wr)
   if #wr == 0 then
     return nil
   end
@@ -115,7 +87,7 @@ function border.MakeHorizontalLatex(wr, config, source)
       if length.IsEqual(w, currentWidth) then
         currentLength = currentLength + 1
       else
-        local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config)
+        local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr)
         if inline ~= nil then
           inlines:insert(inline)
         end
@@ -126,7 +98,7 @@ function border.MakeHorizontalLatex(wr, config, source)
     end
   end
 
-  local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config)
+  local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr)
   if inline ~= nil then
     inlines:insert(inline)
   end
@@ -135,13 +107,10 @@ function border.MakeHorizontalLatex(wr, config, source)
 end
 
 ---@param w length
----@param config config
 ---@return Inline
-function border.MakeVerticalLatex(w, config)
+function border.MakeVerticalLatex(w)
   if length.IsZero(w) then
     return raw("")
-  elseif length.IsEqual(w, config.ArrayRuleWidth) then
-    return raw("|")
   else
     return merge({
       raw([[!{\vrule width ]]),

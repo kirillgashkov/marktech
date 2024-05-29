@@ -61,7 +61,7 @@ function multirowcol.MakeMulticolLatex(content, forCell, config)
     }),
     merge({
       raw([[{]]),
-      spec.MakeLatex(forCell.Alignment, forCell.Width, forCell.Border, config),
+      spec.MakeLatex(forCell.Alignment, forCell.Width, forCell.Border),
       raw([[}]]),
     }),
     merge({
