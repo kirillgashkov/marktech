@@ -590,14 +590,35 @@ end
 ---@param t Table
 ---@return tableConfig
 local function makeTableConfig(t)
+  local separateHead = false
+  if t.attr.attributes["template-table-separate-head"] ~= nil then
+    separateHead = t.attr.attributes["template-table-separate-head"] == "1"
+  end
+  local repeatHead = true
+  if t.attr.attributes["template-table-repeat-head"] ~= nil then
+    repeatHead = t.attr.attributes["template-table-repeat-head"] == "1"
+  end
+  local separateFoot = false
+  if t.attr.attributes["template-table-separate-foot"] ~= nil then
+    separateFoot = t.attr.attributes["template-table-separate-foot"] == "1"
+  end
+  local repeatFoot = false
+  if t.attr.attributes["template-table-repeat-foot"] ~= nil then
+    repeatFoot = t.attr.attributes["template-table-repeat-foot"] == "1"
+  end
+  local hyphenate = nil
+  if t.attr.attributes["template-table-hyphenate"] ~= nil then
+    hyphenate = t.attr.attributes["template-table-hyphenate"] == "1"
+  end
+
   return {
     OuterBorderWidth = { pt = 1 },
     InnerBorderWidth = { pt = 0.5 },
-    SeparateHead = t.attr.attributes["template-table-separate-head"] or false,
-    RepeatHead = t.attr.attributes["template-table-repeat-head"] or true,
-    SeparateFoot = t.attr.attributes["template-table-separate-foot"] or false,
-    RepeatFoot = t.attr.attributes["template-table-repeat-foot"] or false,
-    Hyphenate = t.attr.attributes["template-table-hyphenate"] or nil,
+    SeparateHead = separateHead,
+    RepeatHead = repeatHead,
+    SeparateFoot = separateFoot,
+    RepeatFoot = repeatFoot,
+    Hyphenate = hyphenate,
   }
 end
 
@@ -605,6 +626,7 @@ end
 ---@return Block
 function table_.MakeLatex(pandocTable)
   local tableConfig = makeTableConfig(pandocTable)
+  log.Note(tableConfig)
   local t = makeTable(pandocTable, tableConfig)
   return makeTableLatex(t, tableConfig)
 end
