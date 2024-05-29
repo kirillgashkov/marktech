@@ -1,5 +1,5 @@
-local border = require("internal.table.border")
-local alignment = require("internal.table.alignment")
+local border = require("writer.internal.table.border")
+local alignment = require("writer.internal.table.alignment")
 
 local element = require("internal.element")
 local merge = element.Merge

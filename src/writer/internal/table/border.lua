@@ -1,5 +1,4 @@
-local log = require("internal.log")
-local length = require("internal.table.length")
+local length = require("writer.internal.table.length")
 
 local element = require("internal.element")
 local merge = element.Merge

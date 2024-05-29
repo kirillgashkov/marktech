@@ -1,4 +1,4 @@
-local width = require("internal.table.width")
+local width = require("writer.internal.table.width")
 local element = require("internal.element")
 
 local merge = element.Merge

@@ -1,5 +1,5 @@
-local spec = require("internal.table.spec")
-local width = require("internal.table.width")
+local spec = require("writer.internal.table.spec")
+local width = require("writer.internal.table.width")
 
 local element = require("internal.element")
 local merge = element.Merge

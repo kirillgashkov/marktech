@@ -2,7 +2,7 @@ assert(tostring(PANDOC_API_VERSION) == "1.23.1", "Unsupported Pandoc API")
 
 local file = require("internal.file")
 local element = require("internal.element")
-local table_ = require("internal.table.table")
+local table_ = require("writer.internal.table.table")
 
 ---@param d Pandoc
 ---@param options WriterOptions

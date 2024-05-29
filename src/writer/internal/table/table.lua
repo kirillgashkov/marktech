@@ -1,14 +1,13 @@
-local file = require("internal.file")
 local fun = require("internal.fun")
 local log = require("internal.log")
-local alignment = require("internal.table.alignment")
-local width = require("internal.table.width")
-local border = require("internal.table.border")
-local multirowcol = require("internal.table.multirowcol")
-local spec = require("internal.table.spec")
-local element = require("internal.element")
-local length = require("internal.table.length")
+local alignment = require("writer.internal.table.alignment")
+local width = require("writer.internal.table.width")
+local border = require("writer.internal.table.border")
+local multirowcol = require("writer.internal.table.multirowcol")
+local spec = require("writer.internal.table.spec")
+local length = require("writer.internal.table.length")
 
+local element = require("internal.element")
 local merge = element.Merge
 local raw = element.Raw
 

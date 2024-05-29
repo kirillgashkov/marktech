@@ -1,4 +1,4 @@
-local length = require("internal.table.length")
+local length = require("writer.internal.table.length")
 local log = require("internal.log")
 
 local element = require("internal.element")
