@@ -315,8 +315,9 @@ end
 ---@param y integer
 ---@param rows List<List<cell>>
 ---@param config config
+---@param source string | nil
 ---@return { T: Inline | nil, B: Inline | nil }
-local function makeRowBorderLatex(y, rows, config)
+local function makeRowBorderLatex(y, rows, config, source)
   local topWr = pandoc.List({})
   local bottomWr = pandoc.List({})
 
@@ -341,8 +342,8 @@ local function makeRowBorderLatex(y, rows, config)
   end
 
   return {
-    T = border.MakeHorizontalLatex(topWr, config),
-    B = border.MakeHorizontalLatex(bottomWr, config),
+    T = border.MakeHorizontalLatex(topWr, config, source),
+    B = border.MakeHorizontalLatex(bottomWr, config, source),
   }
 end
 
@@ -351,8 +352,9 @@ end
 ---@param colAlignments List<"left" | "center" | "right">
 ---@param canPageBreak boolean
 ---@param config config
+---@param source string | nil
 ---@return Inline
-local function makeRowLatex(y, rows, canPageBreak, colAlignments, config)
+local function makeRowLatex(y, rows, canPageBreak, colAlignments, config, source)
   local cells = pandoc.Inlines({})
   for x = 1, #rows[y] do
     local c = makeCellLatex(x, y, rows, colAlignments, config)
@@ -361,7 +363,7 @@ local function makeRowLatex(y, rows, canPageBreak, colAlignments, config)
     end
   end
 
-  local rowBorder = makeRowBorderLatex(y, rows, config)
+  local rowBorder = makeRowBorderLatex(y, rows, config, source)
   local topBorder = rowBorder.T
   local bottomBorder = rowBorder.B
 
@@ -379,11 +381,12 @@ end
 ---@param colAlignments List<"left" | "center" | "right">
 ---@param canPageBreak boolean
 ---@param config config
+---@param source string | nil
 ---@return Inline | nil
-local function makeRowsLatex(rows, colAlignments, canPageBreak, config)
+local function makeRowsLatex(rows, colAlignments, canPageBreak, config, source)
   local inlines = pandoc.Inlines({})
   for y = 1, #rows do
-    inlines:insert(makeRowLatex(y, rows, canPageBreak, colAlignments, config))
+    inlines:insert(makeRowLatex(y, rows, canPageBreak, colAlignments, config, source))
   end
   return #rows > 0 and merge(fun.Intersperse(inlines, raw("\n"))) or nil
 end
@@ -517,14 +520,15 @@ end
 ---@param t tbl
 ---@param tableConfig tableConfig
 ---@param config config
-local function makeTableLatex(t, tableConfig, config)
+---@param source string | nil
+local function makeTableLatex(t, tableConfig, config, source)
   local firstHeadCaptionRowLatex = makeFirstHeadCaptionRowLatex(t.Id, t.Caption)
   local otherHeadCaptionRowLatex = makeOtherHeadCaptionRowLatex(t.Id, t.Caption)
-  local firstTopBorderLatex = border.MakeHorizontalLatex(pandoc.List({ t.FirstTopBorder }), config)
-  local lastBottomBorderLatex = border.MakeHorizontalLatex(pandoc.List({ t.LastBottomBorder }), config)
-  local headRowsLatex = makeRowsLatex(t.HeadRows, t.ColAlignments, false, config)
-  local bodyRowsLatex = makeRowsLatex(t.BodyRows, t.ColAlignments, true, config)
-  local footRowsLatex = makeRowsLatex(t.FootRows, t.ColAlignments, false, config)
+  local firstTopBorderLatex = border.MakeHorizontalLatex(pandoc.List({ t.FirstTopBorder }), config, source)
+  local lastBottomBorderLatex = border.MakeHorizontalLatex(pandoc.List({ t.LastBottomBorder }), config, source)
+  local headRowsLatex = makeRowsLatex(t.HeadRows, t.ColAlignments, false, config, source)
+  local bodyRowsLatex = makeRowsLatex(t.BodyRows, t.ColAlignments, true, config, source)
+  local footRowsLatex = makeRowsLatex(t.FootRows, t.ColAlignments, false, config, source)
 
   return pandoc.Plain({
     merge({
@@ -574,7 +578,7 @@ function table_.MakeLatex(pandocTable)
   local config = {
     ArrayRuleWidth = { pt = 0.4 },
   }
-  return makeTableLatex(t, tableConfig, config)
+  return makeTableLatex(t, tableConfig, config, element.GetSource(pandocTable))
 end
 
 return table_

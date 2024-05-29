@@ -79,7 +79,7 @@ local function makeHorizontalLatex(i, w, l, maxIndex, config, source)
         raw([[{0pt}]]),
       })
     else
-      log.Error("table row has unsupported border width", source)
+      log.Warning("table row has unsupported border width, the supported width is used instead", source)
       return raw([[\cline{]] .. i .. [[-]] .. i + l - 1 .. [[}]])
     end
   end
@@ -87,8 +87,9 @@ end
 
 ---@param wr List<length> # Border width row.
 ---@param config config
+---@param source string | nil
 ---@return Inline | nil
-function border.MakeHorizontalLatex(wr, config)
+function border.MakeHorizontalLatex(wr, config, source)
   if #wr == 0 then
     return nil
   end
@@ -104,7 +105,7 @@ function border.MakeHorizontalLatex(wr, config)
       if length.IsEqual(w, currentWidth) then
         currentLength = currentLength + 1
       else
-        local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config)
+        local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config, source)
         if inline ~= nil then
           inlines:insert(inline)
         end
@@ -115,7 +116,7 @@ function border.MakeHorizontalLatex(wr, config)
     end
   end
 
-  local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config)
+  local inline = makeHorizontalLatex(currentStart, currentWidth, currentLength, #wr, config, source)
   if inline ~= nil then
     inlines:insert(inline)
   end
