@@ -140,7 +140,7 @@ local function setWidths(rows, colWidths, colBorders, source)
         elseif anyMaxContentWidth then
           rows[y][x].Width = "max-content"
         elseif anyFixedWidth then
-          rows[y][x].Width = width
+          rows[y][x].Width = w
         else
           assert(false)
         end
