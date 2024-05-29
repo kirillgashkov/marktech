@@ -117,6 +117,34 @@ function Reader(sources, options)
       return t
     end,
   })
+
+  -- hyphenate
+  -- no-hyphenate
+  d = d:walk({
+    ---@param t Table
+    ---@return Table
+    Table = function(t)
+      local flags = { "hyphenate", "repeat-head", "repeat-foot", "separate-head", "separate-foot" }
+      local flagToValue = {}
+
+      for _, c in ipairs(t.attr.classes) do
+        for _, flag in ipairs(flags) do
+          if c == flag then
+            flagToValue[flag] = true
+          elseif c == "no-" .. flag then
+            flagToValue[flag] = false
+          end
+        end
+      end
+
+      for flag, value in pairs(flagToValue) do
+        t.attr.attributes["template-table-" .. flag] = value and "1" or "0"
+      end
+
+      return t
+    end,
+  })
+
   d = d:walk({
     ---@param t Table
     ---@return Table

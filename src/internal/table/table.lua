@@ -212,9 +212,8 @@ end
 ---@param y integer
 ---@param rows List<List<cell>>
 ---@param colAlignments List<"left" | "center" | "right">
----@param config config
 ---@return Inline
-local function makeContentCellLatex(x, y, rows, colAlignments, config)
+local function makeContentCellLatex(x, y, rows, colAlignments)
   local c = rows[y][x]
   assert(c.Type == "contentCell")
   ---@cast c contentCell
@@ -225,7 +224,7 @@ local function makeContentCellLatex(x, y, rows, colAlignments, config)
     inline = multirowcol.MakeMultirowLatex(inline, c)
   end
   if multirowcol.IsMulticol(c, x, colAlignments) then
-    inline = multirowcol.MakeMulticolLatex(inline, c, config)
+    inline = multirowcol.MakeMulticolLatex(inline, c)
   end
 
   return inline
@@ -235,9 +234,8 @@ end
 ---@param y integer
 ---@param rows List<List<cell>>
 ---@param colAlignments List<"left" | "center" | "right">
----@param config config
 ---@return Inline | nil
-local function makeMergeCellLatex(x, y, rows, colAlignments, config)
+local function makeMergeCellLatex(x, y, rows, colAlignments)
   local c = rows[y][x]
   assert(c.Type == "mergeCell")
   ---@cast c mergeCell
@@ -250,7 +248,7 @@ local function makeMergeCellLatex(x, y, rows, colAlignments, config)
     local inline = merge({})
 
     if multirowcol.IsMulticol(ofC, c.Of.X, colAlignments) then
-      inline = multirowcol.MakeMulticolLatex(inline, ofC, config)
+      inline = multirowcol.MakeMulticolLatex(inline, ofC)
     end
 
     return inline
@@ -263,19 +261,18 @@ end
 ---@param y integer
 ---@param rows List<List<cell>>
 ---@param colAlignments List<"left" | "center" | "right">
----@param config config
 ---@return Inline | nil
-local function makeCellLatex(x, y, rows, colAlignments, config)
+local function makeCellLatex(x, y, rows, colAlignments)
   local c = rows[y][x]
 
   if c.Type == "contentCell" then
     ---@cast c contentCell
 
-    return makeContentCellLatex(x, y, rows, colAlignments, config)
+    return makeContentCellLatex(x, y, rows, colAlignments)
   elseif c.Type == "mergeCell" then
     ---@cast c mergeCell
 
-    return makeMergeCellLatex(x, y, rows, colAlignments, config)
+    return makeMergeCellLatex(x, y, rows, colAlignments)
   else
     assert(false)
   end
@@ -349,12 +346,11 @@ end
 ---@param rows List<List<cell>>
 ---@param colAlignments List<"left" | "center" | "right">
 ---@param canPageBreak boolean
----@param config config
 ---@return Inline
-local function makeRowLatex(y, rows, canPageBreak, colAlignments, config)
+local function makeRowLatex(y, rows, canPageBreak, colAlignments)
   local cells = pandoc.Inlines({})
   for x = 1, #rows[y] do
-    local c = makeCellLatex(x, y, rows, colAlignments, config)
+    local c = makeCellLatex(x, y, rows, colAlignments)
     if c ~= nil then
       cells:insert(c)
     end
@@ -377,12 +373,11 @@ end
 ---@param rows List<List<cell>>
 ---@param colAlignments List<"left" | "center" | "right">
 ---@param canPageBreak boolean
----@param config config
 ---@return Inline | nil
-local function makeRowsLatex(rows, colAlignments, canPageBreak, config)
+local function makeRowsLatex(rows, colAlignments, canPageBreak)
   local inlines = pandoc.Inlines({})
   for y = 1, #rows do
-    inlines:insert(makeRowLatex(y, rows, canPageBreak, colAlignments, config))
+    inlines:insert(makeRowLatex(y, rows, canPageBreak, colAlignments))
   end
   return #rows > 0 and merge(fun.Intersperse(inlines, raw("\n"))) or nil
 end
@@ -515,15 +510,29 @@ end
 
 ---@param t tbl
 ---@param tableConfig tableConfig
----@param config config
-local function makeTableLatex(t, tableConfig, config)
+local function makeTableLatex(t, tableConfig)
   local firstHeadCaptionRowLatex = makeFirstHeadCaptionRowLatex(t.Id, t.Caption)
   local otherHeadCaptionRowLatex = makeOtherHeadCaptionRowLatex(t.Id, t.Caption)
   local firstTopBorderLatex = border.MakeHorizontalLatex(pandoc.List({ t.FirstTopBorder }))
   local lastBottomBorderLatex = border.MakeHorizontalLatex(pandoc.List({ t.LastBottomBorder }))
-  local headRowsLatex = makeRowsLatex(t.HeadRows, t.ColAlignments, false, config)
-  local bodyRowsLatex = makeRowsLatex(t.BodyRows, t.ColAlignments, true, config)
-  local footRowsLatex = makeRowsLatex(t.FootRows, t.ColAlignments, false, config)
+  local headRowsLatex = makeRowsLatex(t.HeadRows, t.ColAlignments, false)
+  local bodyRowsLatex = makeRowsLatex(t.BodyRows, t.ColAlignments, true)
+  local footRowsLatex = makeRowsLatex(t.FootRows, t.ColAlignments, false)
+  local hyphenateStartLatex = tableConfig.Hyphenate ~= nil
+      and merge({
+        raw([[\makeatletter]]),
+        raw([[\template@hyphenation@save]]),
+        tableConfig.Hyphenate and raw([[\template@hyphenation@enable]]) or raw([[\template@hyphenation@disable]]),
+        raw([[\makeatother]]),
+      })
+    or nil
+  local hyphenateEndLatex = tableConfig.Hyphenate ~= nil
+      and merge({
+        raw([[\makeatletter]]),
+        raw([[\template@hyphenation@restore]]),
+        raw([[\makeatother]]),
+      })
+    or nil
 
   return pandoc.Plain({
     merge({
@@ -536,44 +545,68 @@ local function makeTableLatex(t, tableConfig, config)
     merge({ raw("\n") }),
     firstHeadCaptionRowLatex ~= nil and merge({ firstHeadCaptionRowLatex, raw("\n") }) or merge({}),
     firstTopBorderLatex ~= nil and merge({ firstTopBorderLatex, raw("\n") }) or merge({}),
-    headRowsLatex ~= nil and merge({ headRowsLatex, raw("\n") }) or merge({}),
+    headRowsLatex ~= nil and merge({
+      hyphenateStartLatex ~= nil and merge({ hyphenateStartLatex, raw("\n") }) or merge({}),
+      merge({ headRowsLatex, raw("\n") }),
+      hyphenateEndLatex ~= nil and merge({ hyphenateEndLatex, raw("\n") }) or merge({}),
+    }) or merge({}),
     merge({ raw([[\endfirsthead]]), raw("\n") }),
     merge({ raw("\n") }),
     merge({ otherHeadCaptionRowLatex, raw("\n") }),
     firstTopBorderLatex ~= nil and merge({ firstTopBorderLatex, raw("\n") }) or merge({}),
-    (tableConfig.RepeatHead and headRowsLatex ~= nil) and merge({ headRowsLatex, raw("\n") }) or merge({}),
+    (tableConfig.RepeatHead and headRowsLatex ~= nil) and merge({
+      hyphenateStartLatex ~= nil and merge({ hyphenateStartLatex, raw("\n") }) or merge({}),
+      merge({ headRowsLatex, raw("\n") }),
+      hyphenateEndLatex ~= nil and merge({ hyphenateEndLatex, raw("\n") }) or merge({}),
+    }) or merge({}),
     merge({ raw([[\endhead]]), raw("\n") }),
     merge({ raw("\n") }),
-    (tableConfig.RepeatFoot and footRowsLatex ~= nil) and merge({ footRowsLatex, raw("\n") }) or merge({}),
+    (tableConfig.RepeatFoot and footRowsLatex ~= nil) and merge({
+      hyphenateStartLatex ~= nil and merge({ hyphenateStartLatex, raw("\n") }) or merge({}),
+      merge({ footRowsLatex, raw("\n") }),
+      hyphenateEndLatex ~= nil and merge({ hyphenateEndLatex, raw("\n") }) or merge({}),
+    }) or merge({}),
     lastBottomBorderLatex ~= nil and merge({ lastBottomBorderLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endfoot]]), raw("\n") }),
     merge({ raw("\n") }),
-    footRowsLatex ~= nil and merge({ footRowsLatex, raw("\n") }) or merge({}),
+    footRowsLatex ~= nil and merge({
+      hyphenateStartLatex ~= nil and merge({ hyphenateStartLatex, raw("\n") }) or merge({}),
+      merge({ footRowsLatex, raw("\n") }),
+      hyphenateEndLatex ~= nil and merge({ hyphenateEndLatex, raw("\n") }) or merge({}),
+    }) or merge({}),
     lastBottomBorderLatex ~= nil and merge({ lastBottomBorderLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endlastfoot]]), raw("\n") }),
     merge({ raw("\n") }),
-    bodyRowsLatex ~= nil and merge({ bodyRowsLatex, raw("\n") }) or merge({}),
+    bodyRowsLatex ~= nil and merge({
+      hyphenateStartLatex ~= nil and merge({ hyphenateStartLatex, raw("\n") }) or merge({}),
+      merge({ bodyRowsLatex, raw("\n") }),
+      hyphenateEndLatex ~= nil and merge({ hyphenateEndLatex, raw("\n") }) or merge({}),
+    }) or merge({}),
     merge({ raw("\n") }),
     merge({ raw([[\end{longtable}]]) }),
   })
 end
 
+---@param t Table
+---@return tableConfig
+local function makeTableConfig(t)
+  return {
+    OuterBorderWidth = { pt = 1 },
+    InnerBorderWidth = { pt = 0.5 },
+    SeparateHead = t.attr.attributes["template-table-separate-head"] or false,
+    RepeatHead = t.attr.attributes["template-table-repeat-head"] or true,
+    SeparateFoot = t.attr.attributes["template-table-separate-foot"] or false,
+    RepeatFoot = t.attr.attributes["template-table-repeat-foot"] or false,
+    Hyphenate = t.attr.attributes["template-table-hyphenate"] or nil,
+  }
+end
+
 ---@param pandocTable Table
 ---@return Block
 function table_.MakeLatex(pandocTable)
-  local tableConfig = {
-    OuterBorderWidth = { pt = 1 },
-    InnerBorderWidth = { pt = 0.5 },
-    SeparateHead = true,
-    RepeatHead = true,
-    SeparateFoot = true,
-    RepeatFoot = false,
-  }
+  local tableConfig = makeTableConfig(pandocTable)
   local t = makeTable(pandocTable, tableConfig)
-  local config = {
-    ArrayRuleWidth = { pt = 0.4 },
-  }
-  return makeTableLatex(t, tableConfig, config)
+  return makeTableLatex(t, tableConfig)
 end
 
 return table_

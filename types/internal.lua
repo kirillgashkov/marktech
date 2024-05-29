@@ -46,6 +46,7 @@
 ---@field RepeatHead boolean
 ---@field SeparateFoot boolean
 ---@field RepeatFoot boolean
+---@field Hyphenate boolean | nil
 
 ---@class colSpec
 ---@field Alignment "left" | "center" | "right"

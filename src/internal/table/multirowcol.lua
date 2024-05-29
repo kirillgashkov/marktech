@@ -49,9 +49,8 @@ end
 
 ---@param content Inline
 ---@param forCell contentCell
----@param config config
 ---@return Inline
-function multirowcol.MakeMulticolLatex(content, forCell, config)
+function multirowcol.MakeMulticolLatex(content, forCell)
   return merge({
     raw([[\multicolumn]]),
     merge({
