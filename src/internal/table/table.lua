@@ -535,6 +535,7 @@ local function makeTableLatex(t, tableConfig)
     or nil
 
   return pandoc.Plain({
+    hyphenateStartLatex ~= nil and merge({ hyphenateStartLatex, raw("\n") }) or merge({}),
     merge({
       raw([[\begin{longtable}]]),
       raw([[{]]),
@@ -545,11 +546,7 @@ local function makeTableLatex(t, tableConfig)
     merge({ raw("\n") }),
     firstHeadCaptionRowLatex ~= nil and merge({ firstHeadCaptionRowLatex, raw("\n") }) or merge({}),
     firstTopBorderLatex ~= nil and merge({ firstTopBorderLatex, raw("\n") }) or merge({}),
-    headRowsLatex ~= nil and merge({
-      hyphenateStartLatex ~= nil and merge({ hyphenateStartLatex, raw("\n") }) or merge({}),
-      merge({ headRowsLatex, raw("\n") }),
-      hyphenateEndLatex ~= nil and merge({ hyphenateEndLatex, raw("\n") }) or merge({}),
-    }) or merge({}),
+    headRowsLatex ~= nil and merge({ headRowsLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endfirsthead]]), raw("\n") }),
     merge({ raw("\n") }),
     merge({ otherHeadCaptionRowLatex, raw("\n") }),
@@ -561,29 +558,18 @@ local function makeTableLatex(t, tableConfig)
     }) or merge({}),
     merge({ raw([[\endhead]]), raw("\n") }),
     merge({ raw("\n") }),
-    (tableConfig.RepeatFoot and footRowsLatex ~= nil) and merge({
-      hyphenateStartLatex ~= nil and merge({ hyphenateStartLatex, raw("\n") }) or merge({}),
-      merge({ footRowsLatex, raw("\n") }),
-      hyphenateEndLatex ~= nil and merge({ hyphenateEndLatex, raw("\n") }) or merge({}),
-    }) or merge({}),
+    (tableConfig.RepeatFoot and footRowsLatex ~= nil) and merge({ footRowsLatex, raw("\n") }) or merge({}),
     lastBottomBorderLatex ~= nil and merge({ lastBottomBorderLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endfoot]]), raw("\n") }),
     merge({ raw("\n") }),
-    footRowsLatex ~= nil and merge({
-      hyphenateStartLatex ~= nil and merge({ hyphenateStartLatex, raw("\n") }) or merge({}),
-      merge({ footRowsLatex, raw("\n") }),
-      hyphenateEndLatex ~= nil and merge({ hyphenateEndLatex, raw("\n") }) or merge({}),
-    }) or merge({}),
+    footRowsLatex ~= nil and merge({ footRowsLatex, raw("\n") }) or merge({}),
     lastBottomBorderLatex ~= nil and merge({ lastBottomBorderLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endlastfoot]]), raw("\n") }),
     merge({ raw("\n") }),
-    bodyRowsLatex ~= nil and merge({
-      hyphenateStartLatex ~= nil and merge({ hyphenateStartLatex, raw("\n") }) or merge({}),
-      merge({ bodyRowsLatex, raw("\n") }),
-      hyphenateEndLatex ~= nil and merge({ hyphenateEndLatex, raw("\n") }) or merge({}),
-    }) or merge({}),
+    bodyRowsLatex ~= nil and merge({ bodyRowsLatex, raw("\n") }) or merge({}),
     merge({ raw("\n") }),
     merge({ raw([[\end{longtable}]]) }),
+    hyphenateEndLatex ~= nil and merge({ hyphenateEndLatex, raw("\n") }) or merge({}),
   })
 end
 
@@ -626,7 +612,6 @@ end
 ---@return Block
 function table_.MakeLatex(pandocTable)
   local tableConfig = makeTableConfig(pandocTable)
-  log.Note(tableConfig)
   local t = makeTable(pandocTable, tableConfig)
   return makeTableLatex(t, tableConfig)
 end
