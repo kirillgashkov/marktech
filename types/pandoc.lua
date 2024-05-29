@@ -32,7 +32,7 @@ PANDOC_STATE = {}
 -- ---@field find fun(self: List<T>, value: T, start_at: integer): any|nil
 -- ---@field find_if fun(self: List<T>, predicate: fun(value: T): boolean, start_at: integer): any|nil
 -- ---@field filter fun(self: List<T>, predicate: fun(value: T): boolean): List<T>
--- ---@field includes fun(self: List<T>, value: T, start_at: integer): boolean
+-- ---@field includes fun(self: List<T>, value: T, start_at?: integer | nil): boolean
 -- ---@field insert (fun(self: List<T>, index: integer, value: T): nil) | (fun(self: List<T>, value: T): nil)
 -- ---@field map  fun(self: List<T>, fn: fun(value: T): any): List<any>
 -- ---@field new fun(self: List<T>, table_: any[]): List<any>
@@ -55,7 +55,7 @@ PANDOC_STATE = {}
 ---* List:new(table).
 ---* List:remove(pos).
 ---* List:sort(comp).
----@class pandoc.List<T>: { [integer]: T, __concat: (fun(self: pandoc.List<T>, list: pandoc.List<T>): pandoc.List<T>), __eq: (fun(a: pandoc.List<T>, b: pandoc.List<T>): boolean), clone: (fun(self: pandoc.List<T>): pandoc.List<T>), extend: (fun(self: pandoc.List<T>, list: pandoc.List<T>): pandoc.List<T>), find: (fun(self: pandoc.List<T>, value: T, start_at: integer): any|nil), find_if: (fun(self: pandoc.List<T>, predicate: fun(value: T): boolean, start_at: integer): any|nil), filter: (fun(self: pandoc.List<T>, predicate: fun(value: T): boolean): pandoc.List<T>), includes: (fun(self: pandoc.List<T>, value: T, start_at: integer): boolean), insert: ((fun(self: pandoc.List<T>, index: integer, value: T): nil) | (fun(self: pandoc.List<T>, value: T): nil)), map: (fun(self: pandoc.List<T>, fn: fun(value: T): any): pandoc.List<any>), new: (fun(self: pandoc.List<T>, table_: any[]): pandoc.List<any>), remove: (fun(self: pandoc.List<T>, index: integer): T), sort: (fun(self: pandoc.List<T>, comparator: fun(left: T, right: T): boolean): nil) }
+---@class pandoc.List<T>: { [integer]: T, __concat: (fun(self: pandoc.List<T>, list: pandoc.List<T>): pandoc.List<T>), __eq: (fun(a: pandoc.List<T>, b: pandoc.List<T>): boolean), clone: (fun(self: pandoc.List<T>): pandoc.List<T>), extend: (fun(self: pandoc.List<T>, list: pandoc.List<T>): pandoc.List<T>), find: (fun(self: pandoc.List<T>, value: T, start_at: integer): any|nil), find_if: (fun(self: pandoc.List<T>, predicate: fun(value: T): boolean, start_at: integer): any|nil), filter: (fun(self: pandoc.List<T>, predicate: fun(value: T): boolean): pandoc.List<T>), includes: (fun(self: pandoc.List<T>, value: T, start_at?: integer | nil): boolean), insert: ((fun(self: pandoc.List<T>, index: integer, value: T): nil) | (fun(self: pandoc.List<T>, value: T): nil)), map: (fun(self: pandoc.List<T>, fn: fun(value: T): any): pandoc.List<any>), new: (fun(self: pandoc.List<T>, table_: any[]): pandoc.List<any>), remove: (fun(self: pandoc.List<T>, index: integer): T), sort: (fun(self: pandoc.List<T>, comparator: fun(left: T, right: T): boolean): nil) }
 
 ---@generic T
 ---@param table_? T[]
