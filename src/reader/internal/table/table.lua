@@ -52,12 +52,12 @@ function table_.SetColSpecs(t)
     log.Note("use column widths instead", element.GetSource(t))
   end
 
-  -- Resets the column widths to be equal and in sum amount to 80%. The
+  -- Resets the column widths to be equal and in sum amount to 100%. The
   -- default reader infers the column widths from the source with the
   -- --columns option taken into account. This is not as deterministic as we
   -- would like, so we perform a reset.
   for i = 1, #t.colspecs do
-    t.colspecs[i][2] = 0.8 / #t.colspecs
+    t.colspecs[i][2] = 1 / #t.colspecs
   end
 
   ---@type pandoc.List<pandoc.List<number | "max-content">>
