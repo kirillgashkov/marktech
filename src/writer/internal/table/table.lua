@@ -550,11 +550,7 @@ local function makeTableLatex(t, tableConfig)
     merge({ raw("\n") }),
     merge({ otherHeadCaptionRowLatex, raw("\n") }),
     firstTopBorderLatex ~= nil and merge({ firstTopBorderLatex, raw("\n") }) or merge({}),
-    (tableConfig.RepeatHead and headRowsLatex ~= nil) and merge({
-      hyphenateStartLatex ~= nil and merge({ hyphenateStartLatex, raw("\n") }) or merge({}),
-      merge({ headRowsLatex, raw("\n") }),
-      hyphenateEndLatex ~= nil and merge({ hyphenateEndLatex, raw("\n") }) or merge({}),
-    }) or merge({}),
+    (tableConfig.RepeatHead and headRowsLatex ~= nil) and merge({ headRowsLatex, raw("\n") }) or merge({}),
     merge({ raw([[\endhead]]), raw("\n") }),
     merge({ raw("\n") }),
     (tableConfig.RepeatFoot and footRowsLatex ~= nil) and merge({ footRowsLatex, raw("\n") }) or merge({}),
