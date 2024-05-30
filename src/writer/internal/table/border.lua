@@ -58,11 +58,11 @@ local function makeHorizontalLatex(i, w, l, maxIndex)
 
   local useFull = i == 1 and i + l - 1 == maxIndex
   if useFull then
-    return merge({ raw([[\varhline]]), raw([[{]]), length.MakeLatex(w), raw([[}]]) })
+    return merge({ raw([[\varhline]]), raw("["), length.MakeLatex(w), raw("]") })
   else
     return merge({
       raw([[\varcline]]),
-      merge({ raw([[{]]), length.MakeLatex(w), raw([[}]]) }),
+      merge({ raw("["), length.MakeLatex(w), raw("]") }),
       merge({ raw([[{]]), raw(tostring(i)), raw([[-]]), raw(tostring(i + l - 1)), raw([[}]]) }),
     })
   end

@@ -198,35 +198,96 @@ $endif$
 \usepackage{longtable}
 
 
-% Variable width \hline and \cline. See https://tex.stackexchange.com/a/24552.
-% booktabs was also considered, their \specialrule worked great but \cmidrule
-% not so much, it had problems with vertical lines.
+% \varhline[#1] and \varcline[#1]#2-#3 are variable width \hline and
+% \cline#1-#2. They are simple clones of original definitions with
+% \arrayrulewidth replaced by #1. See https://tex.stackexchange.com/q/408868
+% for original inspiration.
 
+% Simple temporary \arrayrulewidth workaround from
+% https://tex.stackexchange.com/a/24552 mostly worked but had problems when
+% minted was imported. The problem is probably related to other commands trying
+% to mess with \arrayrulewidth. booktabs was also considered, their \specialrule
+% worked great but \cmidrule not so much, it had problems with vertical lines.
+
+% \varvarhline is based on \hline from latex.ltx:12626-12633 and \varcline is
+% based on \cline from latex.ltx12635-12646. \varvarhline is later used to
+% define a longtable-compatible \varhline. \varcline is used directly in
+% longtables but with a minor patch originating from multirow.
 \makeatletter
-\newlength{\template@table@internal@arrayrulewidth}
-\newcommand{\template@table@arrayrulewidth@set}[1]{%
-  \noalign{\global\setlength{\arrayrulewidth}{#1}}%
-}
-\newcommand{\template@table@arrayrulewidth@save}{%
-  \noalign{\global\setlength{\template@table@internal@arrayrulewidth}{\arrayrulewidth}}%
-}
-\newcommand{\template@table@arrayrulewidth@restore}{%
-  \noalign{\global\setlength{\arrayrulewidth}{\template@table@internal@arrayrulewidth}}%
-}
+\def\varvarhline[#1]{%
+  \noalign{\ifnum0=`}\fi\hrule \@height #1 \futurelet
+   \reserved@a\@xvarvarhline[#1]}
+\def\@xvarvarhline[#1]{\ifx\reserved@a\varvarhline
+               \vskip\doublerulesep
+               \vskip-#1
+             \fi
+      \ifnum0=`{\fi}}
+\def\varcline[#1]#2{\@varvarcline[#1]#2\@nil}
+\def\@varvarcline[#1]#2-#3\@nil{%
+  \omit
+  \@multicnt#2%
+  \advance\@multispan\m@ne
+  \ifnum\@multicnt=\@ne\@firstofone{&\omit}\fi
+  \@multicnt#3%
+  \advance\@multicnt-#2%
+  \advance\@multispan\@ne
+  \leaders\hrule\@height#1\hfill
+  \cr
+  \noalign{\vskip-#1}}
 \makeatother
 
+% \varhline is based on \LT@hline from longtable.sty:369-388. It is used instead
+% of \hline in longtables. We are using \varhline directly.
 \makeatletter
-\newcommand{\varhline}[1]{
-  \template@table@arrayrulewidth@save%
-  \template@table@arrayrulewidth@set{#1}%
-  \hline%
-  \template@table@arrayrulewidth@restore%
-}
-\newcommand{\varcline}[2]{%
-  \template@table@arrayrulewidth@save%
-  \template@table@arrayrulewidth@set{#1}%
-  \cline{#2}%
-  \template@table@arrayrulewidth@restore%
+\def\varhline[#1]{%
+  \noalign{\ifnum0=`}\fi
+    \penalty\@M
+    \futurelet\@let@token\LT@@varvarhline[#1]}
+\def\LT@@varvarhline[#1]{%
+  \ifx\@let@token\varvarhline
+    \global\let\@gtempa\@gobble
+    \gdef\LT@sep{\penalty-\@medpenalty\vskip\doublerulesep}%
+  \else
+    \global\let\@gtempa\@empty
+    \gdef\LT@sep{\penalty-\@lowpenalty\vskip-#1}%
+  \fi
+  \ifnum0=`{\fi}%
+  \multispan\LT@cols
+     \unskip\leaders\hrule\@height#1\hfill\cr
+  \noalign{\LT@sep}%
+  \multispan\LT@cols
+     \unskip\leaders\hrule\@height#1\hfill\cr
+  \noalign{\penalty\@M}%
+  \@gtempa}
+\makeatother
+
+% Based on \@cline patch for longtable from multirow.sty:31-55. \@varvarcline is
+% used by \varvarcline (similarly to how \@cline is used by \cline).
+\makeatletter
+\AtBeginDocument{%
+\@ifundefined{CT@arc}
+{\def\@varvarcline[#1]#2-#3\@nil{%
+  \omit
+  \@multicnt#2%
+  \advance\@multispan\m@ne
+  \ifnum\@multicnt=\@ne\@firstofone{&\omit}\fi
+  \@multicnt#3%
+  \advance\@multicnt-#2%
+  \advance\@multispan\@ne
+  \leaders\hrule\@height#1\hfill
+  \cr
+  \noalign{\nobreak\vskip-#1}}}
+{\def\@varvarcline[#1]#2-#3\@nil{%
+  \omit
+  \@multicnt#2%
+  \advance\@multispan\m@ne
+  \ifnum\@multicnt=\@ne\@firstofone{&\omit}\fi
+  \@multicnt#3%
+  \advance\@multicnt-#2%
+  \advance\@multispan\@ne
+  {\CT@arc@\leaders\hrule\@height#1\hfill}%
+  \cr
+  \noalign{\nobreak\vskip-#1}}}
 }
 \makeatother
 
