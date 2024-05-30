@@ -88,7 +88,7 @@ local function makeLengthWidthLatex(a, w, b)
       raw([[}]]),
     }),
     merge({
-      raw([[p]]),
+      raw([[m]]),
       raw([[{]]),
       width.MakeLatex(w, b),
       raw([[}]]),
