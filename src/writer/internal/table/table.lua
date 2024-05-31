@@ -593,8 +593,8 @@ local function makeTableConfig(t)
   end
 
   return {
-    OuterBorderWidth = { pt = 1 },
-    InnerBorderWidth = { pt = 0.5 },
+    OuterBorderWidth = { pt = 0.4 },
+    InnerBorderWidth = { pt = 0.4 },
     SeparateHead = separateHead,
     RepeatHead = repeatHead,
     SeparateFoot = separateFoot,
