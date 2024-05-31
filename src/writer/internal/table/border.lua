@@ -58,8 +58,19 @@ local function makeHorizontalLatex(i, w, l, maxIndex)
 
   local useFull = i == 1 and i + l - 1 == maxIndex
   if useFull then
+    -- FIXME: Don't hardcode the value.
+    if length.IsEqual(w, { pt = 0.4 }) then
+      return merge({ raw([[\hline]]) })
+    end
     return merge({ raw([[\varhline]]), raw("["), length.MakeLatex(w), raw("]") })
   else
+    -- FIXME: Don't hardcode the value.
+    if length.IsEqual(w, { pt = 0.4 }) then
+      return merge({
+        raw([[\cline]]),
+        merge({ raw([[{]]), raw(tostring(i)), raw([[-]]), raw(tostring(i + l - 1)), raw([[}]]) }),
+      })
+    end
     return merge({
       raw([[\varcline]]),
       merge({ raw("["), length.MakeLatex(w), raw("]") }),
@@ -111,6 +122,10 @@ function border.MakeVerticalLatex(w)
   if length.IsZero(w) then
     return raw("")
   else
+    -- FIXME: Don't hardcode the value.
+    if length.IsEqual(w, { pt = 0.4 }) then
+      return raw("|")
+    end
     return merge({
       raw([[!{\vrule width ]]),
       length.MakeLatex(w),
